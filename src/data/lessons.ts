@@ -53,6 +53,12 @@ export const LESSONS: Lesson[] = [
       'صدای ساز سنتور شبیه‌ساز را بشنوید و بلافاصله زمزمه کنید.',
     ],
     associatedExerciseId: 'ex_pitch_match_single',
+    sourceAttribution: {
+      sourceName: 'مبانی اتنوموزیکولوژی موسیقی ایران — مهدی برکشلی و کتاب نظری به موسیقی روح‌الله خالقی',
+      sourceType: 'musicological_study',
+      referenceMaster: 'علینقی وزیری / روح‌الله خالقی / مهدی برکشلی',
+      notes: 'تقسیم‌بندی فواصل طنینی، بقیه و مجنب ریشه در رسالات فارابی و صفی‌الدین ارموی دارد.'
+    },
   },
   {
     id: 'lesson_2_shour_daramad',

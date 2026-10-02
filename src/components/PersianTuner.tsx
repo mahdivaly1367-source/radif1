@@ -31,7 +31,7 @@ export const PersianTuner: React.FC<PersianTunerProps> = ({
 
   // مدیریت تغییرات وضعیت میکروفون
   useEffect(() => {
-    microphoneManager.setStatusListener((status: MicrophoneStatus, error?: MicrophoneErrorDetails) => {
+    const unsub = microphoneManager.subscribe((status: MicrophoneStatus, error?: MicrophoneErrorDetails) => {
       setMicStatus(status);
       if (status === 'error' && error) {
         setErrorMessage(error.messageFa);
@@ -41,6 +41,7 @@ export const PersianTuner: React.FC<PersianTunerProps> = ({
     });
 
     return () => {
+      unsub();
       microphoneManager.stop();
       if (animFrameRef.current) {
         cancelAnimationFrame(animFrameRef.current);

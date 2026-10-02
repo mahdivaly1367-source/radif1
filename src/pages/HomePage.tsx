@@ -6,7 +6,7 @@ import { LESSONS } from '../data/lessons';
 import { persianSynth } from '../services/audio/synthPlayer';
 
 interface HomePageProps {
-  onNavigate: (page: PageRoute, params?: { dastgahId?: string; lessonId?: string; exerciseId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
@@ -40,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
-                onClick={() => onNavigate('lessons')}
+                onClick={() => onNavigate('/lessons')}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 transition-all shadow-md active:scale-95"
               >
                 <BookOpen className="w-4 h-4" />
@@ -48,7 +48,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               </button>
 
               <button
-                onClick={() => onNavigate('exercise')}
+                onClick={() => onNavigate('/exercise')}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white bg-stone-800 hover:bg-stone-700 border border-stone-700 transition-all shadow-sm active:scale-95"
               >
                 <Mic className="w-4 h-4 text-amber-400" />
@@ -74,7 +74,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </p>
           </div>
           <button
-            onClick={() => onNavigate('dastgahs')}
+            onClick={() => onNavigate('/dastgahs')}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 transition-colors"
           >
             <span>مشاهده همه و جزئیات گوشه‌ها</span>
@@ -86,7 +86,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           {primaryDastgahs.map((dastgah) => (
             <div
               key={dastgah.id}
-              onClick={() => onNavigate('dastgahs', { dastgahId: dastgah.id })}
+              onClick={() => onNavigate(`/dastgahs/${dastgah.id}`)}
               className="group bg-white rounded-xl border border-stone-200 hover:border-amber-400/80 p-5 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
             >
               <div>
@@ -144,7 +144,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             {avazes.map((avaz) => (
               <div
                 key={avaz.id}
-                onClick={() => onNavigate('dastgahs', { dastgahId: avaz.id })}
+                onClick={() => onNavigate(`/dastgahs/${avaz.id}`)}
                 className="bg-white rounded-xl border border-stone-200 hover:border-amber-400 p-5 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
               >
                 <div>
@@ -251,14 +251,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <button
-              onClick={() => onNavigate('exercise')}
+              onClick={() => onNavigate('/exercise')}
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 transition-colors shadow-md"
             >
               <Mic className="w-4 h-4" />
               <span>ورود به محیط تمرین</span>
             </button>
             <button
-              onClick={() => onNavigate('lessons')}
+              onClick={() => onNavigate('/lessons')}
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-white bg-stone-800 hover:bg-stone-700 border border-stone-600 transition-colors"
             >
               <BookOpen className="w-4 h-4 text-stone-300" />

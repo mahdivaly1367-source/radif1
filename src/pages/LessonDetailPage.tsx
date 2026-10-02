@@ -9,7 +9,7 @@ import { ProgressStorage } from '../services/storage';
 interface LessonDetailPageProps {
   lesson: Lesson;
   onBack: () => void;
-  onNavigate: (page: PageRoute, params?: { lessonId?: string; exerciseId?: string; dastgahId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
@@ -62,7 +62,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
         <div className="flex items-center gap-2">
           {prevLesson && (
             <button
-              onClick={() => onNavigate('lessons', { lessonId: prevLesson.id })}
+              onClick={() => onNavigate(`/lessons/${prevLesson.id}`)}
               className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors text-xs flex items-center gap-1"
               title={prevLesson.titleFa}
             >
@@ -72,7 +72,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
           )}
           {nextLesson && (
             <button
-              onClick={() => onNavigate('lessons', { lessonId: nextLesson.id })}
+              onClick={() => onNavigate(`/lessons/${nextLesson.id}`)}
               className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-100 transition-colors text-xs flex items-center gap-1"
               title={nextLesson.titleFa}
             >
@@ -213,7 +213,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
         </button>
 
         <button
-          onClick={() => onNavigate('exercise', { exerciseId: lesson.associatedExerciseId })}
+          onClick={() => onNavigate(`/exercise/${lesson.associatedExerciseId}`)}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 transition-all shadow-sm active:scale-95"
         >
           <Mic className="w-4 h-4" />

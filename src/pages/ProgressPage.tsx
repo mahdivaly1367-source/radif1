@@ -8,7 +8,7 @@ import { EXERCISES } from '../data/exercises';
 import { PageRoute } from '../components/Navbar';
 
 interface ProgressPageProps {
-  onNavigate: (page: PageRoute, params?: { lessonId?: string; exerciseId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
@@ -122,7 +122,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               <Award className="w-8 h-8 mx-auto opacity-50" />
               <p className="text-xs">هنوز هیچ تمرین صوتی انجام نداده‌اید.</p>
               <button
-                onClick={() => onNavigate('exercise')}
+                onClick={() => onNavigate('/exercise')}
                 className="text-xs font-bold text-amber-700 hover:text-amber-800 underline"
               >
                 رفتن به کارگاه تمرین و سنجش صدا

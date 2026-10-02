@@ -10,7 +10,7 @@ import { EXERCISES } from '../data/exercises';
 interface DastgahDetailPageProps {
   dastgah: Dastgah;
   onBack: () => void;
-  onNavigate: (page: PageRoute, params?: { dastgahId?: string; lessonId?: string; exerciseId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
@@ -75,7 +75,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
         </button>
 
         <button
-          onClick={() => onNavigate('exercise', { dastgahId: dastgah.id })}
+          onClick={() => onNavigate(`/exercise?dastgah=${dastgah.id}`)}
           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 transition-colors shadow-xs"
         >
           <Mic className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
                 {relatedLessons.map((l) => (
                   <button
                     key={l.id}
-                    onClick={() => onNavigate('lessons', { lessonId: l.id })}
+                    onClick={() => onNavigate(`/lessons/${l.id}`)}
                     className="w-full text-right p-3 rounded-lg border border-stone-100 hover:border-amber-300 hover:bg-amber-50/40 transition-colors flex items-center justify-between"
                   >
                     <div>
@@ -287,7 +287,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
                 {relatedExercises.map((e) => (
                   <button
                     key={e.id}
-                    onClick={() => onNavigate('exercise', { exerciseId: e.id })}
+                    onClick={() => onNavigate(`/exercise/${e.id}`)}
                     className="w-full text-right p-3 rounded-lg border border-stone-100 hover:border-amber-300 hover:bg-amber-50/40 transition-colors flex items-center justify-between"
                   >
                     <div>

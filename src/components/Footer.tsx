@@ -3,7 +3,7 @@ import { Music, Heart, Volume2 } from 'lucide-react';
 import { PageRoute } from './Navbar';
 
 interface FooterProps {
-  onNavigate: (page: PageRoute, params?: { dastgahId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
@@ -27,22 +27,22 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <h4 className="text-xs font-semibold text-stone-200 tracking-wider mb-3">دستگاه‌های هفت‌گانه</h4>
             <ul className="space-y-1.5 text-xs">
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'shour' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/shour')} className="hover:text-amber-400 transition-colors">
                   دستگاه شور (مادر دستگاه‌ها)
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'mahour' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/mahour')} className="hover:text-amber-400 transition-colors">
                   دستگاه ماهور (گام ماژور)
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'homayoun' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/homayoun')} className="hover:text-amber-400 transition-colors">
                   دستگاه همایون و بیداد
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'segah' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/segah')} className="hover:text-amber-400 transition-colors">
                   دستگاه سه‌گاه (نت می کُرُن)
                 </button>
               </li>
@@ -54,22 +54,22 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <h4 className="text-xs font-semibold text-stone-200 tracking-wider mb-3">آوازهای وابسته</h4>
             <ul className="space-y-1.5 text-xs">
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'abouata' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/abouata')} className="hover:text-amber-400 transition-colors">
                   آواز ابوعطا (گوشه حجاز)
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'dashti' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/dashti')} className="hover:text-amber-400 transition-colors">
                   آواز دشتی (نغمه سوزناک)
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'bayat_tork' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/bayat_tork')} className="hover:text-amber-400 transition-colors">
                   آواز بیات تُرک و شکسته
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('dastgahs', { dastgahId: 'esfahan' })} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/dastgahs/esfahan')} className="hover:text-amber-400 transition-colors">
                   آواز بیات اصفهان (لطافت عاشقانه)
                 </button>
               </li>
@@ -81,18 +81,23 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <h4 className="text-xs font-semibold text-stone-200 tracking-wider mb-3">سیستم صوتی و تمرین</h4>
             <ul className="space-y-1.5 text-xs">
               <li>
-                <button onClick={() => onNavigate('exercise')} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/exercise')} className="hover:text-amber-400 transition-colors">
                   کارگاه زنده تحلیل Pitch و فرکانس
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('lessons')} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/lessons')} className="hover:text-amber-400 transition-colors">
                   فهرست درس‌های آموزشی ردیف
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('progress')} className="hover:text-amber-400 transition-colors">
+                <button onClick={() => onNavigate('/progress')} className="hover:text-amber-400 transition-colors">
                   کارنامه و سوابق تمرین
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('/qa')} className="text-amber-500/80 hover:text-amber-400 transition-colors font-mono">
+                  ابزار عیب‌یابی و مانیتورینگ QA
                 </button>
               </li>
             </ul>

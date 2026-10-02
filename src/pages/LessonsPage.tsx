@@ -5,7 +5,7 @@ import { PageRoute } from '../components/Navbar';
 import { ProgressStorage } from '../services/storage';
 
 interface LessonsPageProps {
-  onNavigate: (page: PageRoute, params?: { lessonId?: string }) => void;
+  onNavigate: (path: string) => void;
   onSelectLesson: (lessonId: string) => void;
 }
 

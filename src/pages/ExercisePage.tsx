@@ -9,7 +9,7 @@ import { persianSynth } from '../services/audio/synthPlayer';
 
 interface ExercisePageProps {
   initialExerciseId?: string | null;
-  onNavigate: (page: PageRoute, params?: { lessonId?: string; dastgahId?: string }) => void;
+  onNavigate: (path: string) => void;
 }
 
 export const ExercisePage: React.FC<ExercisePageProps> = ({

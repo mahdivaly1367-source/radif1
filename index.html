@@ -6,36 +6,22 @@
     <script>
       (function() {
         try {
-          var _orig = window.fetch ? window.fetch.bind(window) : undefined;
-          var _curr = _orig;
+          var _nativeFetch = window.fetch;
+          var _currentFetch = function() {
+            return _nativeFetch.apply(window, arguments);
+          };
           Object.defineProperty(window, 'fetch', {
             get: function() {
-              return _curr;
+              return _currentFetch;
             },
-            set: function(val) {
-              _curr = typeof val === 'function' ? val.bind(window) : val;
+            set: function(fn) {
+              _currentFetch = fn;
             },
             configurable: true,
             enumerable: true
           });
-        } catch (e1) {
-          try {
-            var proto = Object.getPrototypeOf(window);
-            if (proto) {
-              var _origProto = proto.fetch ? proto.fetch.bind(window) : undefined;
-              var _currProto = _origProto;
-              Object.defineProperty(proto, 'fetch', {
-                get: function() {
-                  return _currProto;
-                },
-                set: function(val) {
-                  _currProto = typeof val === 'function' ? val.bind(window) : val;
-                },
-                configurable: true,
-                enumerable: true
-              });
-            }
-          } catch (e2) {}
+        } catch (e) {
+          console.warn('Could not define fetch setter:', e);
         }
       })();
     </script>

@@ -6,7 +6,7 @@ import { DastgahCategory } from '../types/music';
 import { persianSynth } from '../services/audio/synthPlayer';
 
 interface DastgahsPageProps {
-  onNavigate: (page: PageRoute, params?: { dastgahId?: string }) => void;
+  onNavigate: (path: string) => void;
   onSelectDastgah: (dastgahId: string) => void;
 }
 

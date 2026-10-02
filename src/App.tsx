@@ -14,118 +14,125 @@ import { LessonsPage } from './pages/LessonsPage';
 import { LessonDetailPage } from './pages/LessonDetailPage';
 import { ExercisePage } from './pages/ExercisePage';
 import { ProgressPage } from './pages/ProgressPage';
+import { QAPage } from './pages/QAPage';
 import { DASTGAHS } from './data/dastgahs';
 import { LESSONS } from './data/lessons';
 import { microphoneManager, MicrophoneStatus } from './services/audio/microphoneManager';
+import { useAppRouter } from './router';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageRoute>('home');
-  const [selectedDastgahId, setSelectedDastgahId] = useState<string | null>(null);
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+  const { route, navigate } = useAppRouter();
   const [isMicActive, setIsMicActive] = useState(false);
 
-  // نظارت بر وضعیت میکروفون در سطح برنامه
+  // اشتراک استاندارد در وضعیت میکروفون (Multi-subscriber)
   useEffect(() => {
-    microphoneManager.setStatusListener((status: MicrophoneStatus) => {
+    const unsub = microphoneManager.subscribe((status: MicrophoneStatus) => {
       setIsMicActive(status === 'recording');
     });
+    return () => unsub();
   }, []);
 
-  const handleNavigate = (
-    page: PageRoute,
-    params?: { dastgahId?: string; lessonId?: string; exerciseId?: string }
-  ) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (params?.dastgahId) {
-      setSelectedDastgahId(params.dastgahId);
-    } else if (page !== 'dastgahs') {
-      setSelectedDastgahId(null);
+  // محافظ پاکسازی صوتی هنگام خروج از صفحات کارگاه تمرین یا کنسول QA
+  useEffect(() => {
+    if (route.routeName !== 'exercise' && route.routeName !== 'qa') {
+      if (microphoneManager.isRecording()) {
+        microphoneManager.stop();
+      }
     }
+  }, [route.routeName]);
 
-    if (params?.lessonId) {
-      setSelectedLessonId(params.lessonId);
-    } else if (page !== 'lessons') {
-      setSelectedLessonId(null);
-    }
-
-    if (params?.exerciseId) {
-      setSelectedExerciseId(params.exerciseId);
-    }
-  };
-
-  const selectedDastgah = selectedDastgahId
-    ? DASTGAHS.find((d) => d.id === selectedDastgahId) || null
+  // استخراج موجودیت‌های متناظر با پارامترهای آدرس
+  const selectedDastgah = route.params.dastgahId
+    ? DASTGAHS.find((d) => d.id === route.params.dastgahId) || null
     : null;
 
-  const selectedLesson = selectedLessonId
-    ? LESSONS.find((l) => l.id === selectedLessonId) || null
+  const selectedLesson = route.params.lessonId
+    ? LESSONS.find((l) => l.id === route.params.lessonId) || null
     : null;
+
+  // نگاشت نام مسیر به PageRoute جهت فعال‌سازی تب مربوطه در Navbar
+  const currentNavRoute: PageRoute = route.routeName as PageRoute;
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900 font-sans selection:bg-amber-100 selection:text-amber-900">
       {/* Global Top Navbar */}
       <Navbar
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
+        currentRoute={currentNavRoute}
+        onNavigate={navigate}
         isMicActive={isMicActive}
       />
 
-      {/* Main Content Area with Routing */}
+      {/* Main Content Area with Real Browser History Routing */}
       <main className="flex-1">
-        {currentPage === 'home' && (
-          <HomePage onNavigate={handleNavigate} />
+        {route.routeName === 'home' && (
+          <HomePage onNavigate={navigate} />
         )}
 
-        {currentPage === 'dastgahs' && (
-          selectedDastgah ? (
-            <DastgahDetailPage
-              dastgah={selectedDastgah}
-              onBack={() => setSelectedDastgahId(null)}
-              onNavigate={handleNavigate}
-            />
-          ) : (
-            <DastgahsPage
-              onNavigate={handleNavigate}
-              onSelectDastgah={(id) => setSelectedDastgahId(id)}
-            />
-          )
-        )}
-
-        {currentPage === 'lessons' && (
-          selectedLesson ? (
-            <LessonDetailPage
-              lesson={selectedLesson}
-              onBack={() => setSelectedLessonId(null)}
-              onNavigate={handleNavigate}
-            />
-          ) : (
-            <LessonsPage
-              onNavigate={handleNavigate}
-              onSelectLesson={(id) => setSelectedLessonId(id)}
-            />
-          )
-        )}
-
-        {currentPage === 'exercise' && (
-          <ExercisePage
-            initialExerciseId={selectedExerciseId}
-            onNavigate={handleNavigate}
+        {route.routeName === 'dastgahs' && (
+          <DastgahsPage
+            onNavigate={navigate}
+            onSelectDastgah={(id) => navigate(`/dastgahs/${id}`)}
           />
         )}
 
-        {currentPage === 'progress' && (
-          <ProgressPage onNavigate={handleNavigate} />
+        {route.routeName === 'dastgah_detail' && (
+          selectedDastgah ? (
+            <DastgahDetailPage
+              dastgah={selectedDastgah}
+              onBack={() => navigate('/dastgahs')}
+              onNavigate={navigate}
+            />
+          ) : (
+            <DastgahsPage
+              onNavigate={navigate}
+              onSelectDastgah={(id) => navigate(`/dastgahs/${id}`)}
+            />
+          )
+        )}
+
+        {route.routeName === 'lessons' && (
+          <LessonsPage
+            onNavigate={navigate}
+            onSelectLesson={(id) => navigate(`/lessons/${id}`)}
+          />
+        )}
+
+        {route.routeName === 'lesson_detail' && (
+          selectedLesson ? (
+            <LessonDetailPage
+              lesson={selectedLesson}
+              onBack={() => navigate('/lessons')}
+              onNavigate={navigate}
+            />
+          ) : (
+            <LessonsPage
+              onNavigate={navigate}
+              onSelectLesson={(id) => navigate(`/lessons/${id}`)}
+            />
+          )
+        )}
+
+        {route.routeName === 'exercise' && (
+          <ExercisePage
+            initialExerciseId={route.params.exerciseId}
+            onNavigate={navigate}
+          />
+        )}
+
+        {route.routeName === 'progress' && (
+          <ProgressPage onNavigate={navigate} />
+        )}
+
+        {route.routeName === 'qa' && (
+          <QAPage />
         )}
       </main>
 
       {/* Global Audio Playback Status Bar */}
       <AudioPlayerBar />
 
-      {/* Footer */}
-      <Footer onNavigate={handleNavigate} />
+      {/* Footer with QA link and route paths */}
+      <Footer onNavigate={navigate} />
     </div>
   );
 }

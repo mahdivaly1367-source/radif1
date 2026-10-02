@@ -17,6 +17,12 @@ export const DASTGAHS: Dastgah[] = [
     tonicNote: 'سل (G4)',
     tuningTarSetar: 'دو - سل - دو - دو (یا دو - سل - ر - ر)',
     tuningSantur: 'سنتور سل‌کوک: خرک‌های زرد و سفید با تنظیم لا کُرُن و می کُرُن',
+    sourceAttribution: {
+      sourceName: 'ردیف میرزا عبدالله به روایت نورعلی برومند و کتاب مفهوم دستگاه در موسیقی ایران (هرمز فرهت)',
+      sourceType: 'radif_mirza_abdollah',
+      referenceMaster: 'نورعلی برومند / داریوش طلایی / هرمز فرهت',
+      notes: 'فواصل شور سل با فاصله خنثی لا کرن (~۱۴۵ سنت) منطبق بر اجرای اساتید سنتی است.'
+    },
     scaleNotes: [
       { noteNameFa: 'سل', roleInScale: 'پایه', accidental: 'natural' },
       { noteNameFa: 'لا کُرُن', roleInScale: 'شاهد درآمد', accidental: 'koron' },
