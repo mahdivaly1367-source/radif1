@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var _orig = window.fetch ? window.fetch.bind(window) : undefined;
+          var _curr = _orig;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _curr;
+            },
+            set: function(val) {
+              _curr = typeof val === 'function' ? val.bind(window) : val;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e1) {
+          try {
+            var proto = Object.getPrototypeOf(window);
+            if (proto) {
+              var _origProto = proto.fetch ? proto.fetch.bind(window) : undefined;
+              var _currProto = _origProto;
+              Object.defineProperty(proto, 'fetch', {
+                get: function() {
+                  return _currProto;
+                },
+                set: function(val) {
+                  _currProto = typeof val === 'function' ? val.bind(window) : val;
+                },
+                configurable: true,
+                enumerable: true
+              });
+            }
+          } catch (e2) {}
+        }
+      })();
+    </script>
+    <title>آموزش ردیف و دستگاه‌های موسیقی ایرانی</title>
+    <meta name="description" content="پلتفرم جامع و تعاملی آموزش دستگاه‌ها، آوازها و ردیف موسیقی اصیل ایرانی با پخش صوت، شبیه‌ساز کوک ساز و تحلیل زنده گام صدا (Pitch Detection) با میکروفون" />
+    <meta property="og:title" content="آموزش ردیف و دستگاه‌های موسیقی ایرانی" />
+    <meta property="og:description" content="پلتفرم جامع و تعاملی آموزش دستگاه‌ها، آوازها و ردیف موسیقی اصیل ایرانی با پخش صوت، شبیه‌ساز کوک ساز و تحلیل زنده گام صدا (Pitch Detection) با میکروفون" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-stone-50 text-stone-900 font-sans antialiased selection:bg-amber-100 selection:text-amber-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

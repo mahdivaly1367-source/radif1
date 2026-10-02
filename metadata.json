@@ -1,0 +1,10 @@
+{
+  "name": "آموزش ردیف و دستگاه‌های موسیقی ایرانی",
+  "description": "پلتفرم جامع و تعاملی آموزش دستگاه‌ها، آوازها و ردیف موسیقی اصیل ایرانی با پخش صوت، شبیه‌ساز کوک ساز و تحلیل زنده گام صدا (Pitch Detection) با میکروفون",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
