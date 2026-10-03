@@ -249,6 +249,30 @@ export class MicrophoneManager {
   public getAnalyserNode(): AnalyserNode | null {
     return this.analyserNode;
   }
+
+  public getInputDeviceLabel(): string {
+    if (!this.stream) return 'میکروفون غیرفعال است';
+    const track = this.stream.getAudioTracks()[0];
+    return track?.label || 'دستگاه ورودی پیش‌فرض سیستم';
+  }
+
+  public getChannelCount(): number {
+    if (!this.stream) return 0;
+    const track = this.stream.getAudioTracks()[0];
+    return track?.getSettings()?.channelCount ?? 1;
+  }
+
+  public async getPermissionStatus(): Promise<'granted' | 'prompt' | 'denied' | 'unsupported'> {
+    if (typeof navigator === 'undefined' || !navigator.permissions || !navigator.permissions.query) {
+      return 'unsupported';
+    }
+    try {
+      const res = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      return res.state;
+    } catch {
+      return 'unsupported';
+    }
+  }
 }
 
 export const microphoneManager = new MicrophoneManager();
