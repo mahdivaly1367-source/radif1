@@ -38,6 +38,9 @@ export interface Gusheh {
   rhythmicType: 'آوازی (غیر ضربی)' | 'متریک (ضربی)' | 'نیمه متریک';
   sampleMelodyNotes?: string[]; // توالی نتها برای شبیه‌ساز صوتی
   orderIndex: number;
+  listeningGuideFa?: string;    // توضیح شنیداری
+  relatedExerciseId?: string;   // تمرین مرتبط در صورت وجود
+  pedagogicalStage?: string;    // جایگاه در نقشه یادگیری
   sourceAttribution?: SourceAttribution;
 }
 
@@ -74,6 +77,9 @@ export interface Lesson {
   level: 'مقدماتی' | 'متوسط' | 'پیشرفته';
   estimatedMinutes: number;
   order: number;
+  learningObjective?: string;
+  prerequisite?: string;
+  whatYouWillLearn?: string[];
   introduction: string;
   keyConcepts: {
     title: string;
@@ -91,7 +97,13 @@ export interface Lesson {
   };
   performanceTips: string[];
   associatedExerciseId: string;
+  tryItNowPrompt?: {
+    title: string;
+    description: string;
+    actionLabel: string;
+  };
   sourceAttribution?: SourceAttribution;
+  targetTuningProfileId?: string;
 }
 
 export interface ExerciseTargetNote {
@@ -110,11 +122,13 @@ export interface Exercise {
   titleFa: string;
   descriptionFa: string;
   difficulty: 'ساده' | 'متوسط' | 'چالش‌برانگیز';
-  type: 'single_note' | 'interval' | 'melody_phrase';
+  type: 'single_note' | 'interval' | 'melody_phrase' | 'listening';
   targetNotes: ExerciseTargetNote[];
   passingScore: number;
   instructionSteps: string[];
-  tuningProfileId?: string;     // شناسه پروفایل کوک مرجع برای این تمرین
+  tuningProfileId?: string;     // شناسه پروفایل کوک مرجع برای این تمرین (مثلاً shour_modal)
+  musicalContext?: 'radif_phrase' | 'single_note_pitch' | 'interval_discrimination'; // تفکیک تمرین نت از آموزش ردیف
+  sourceAttribution?: SourceAttribution;
 }
 
 // ==========================================

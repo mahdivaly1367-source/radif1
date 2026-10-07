@@ -1,11 +1,36 @@
+/**
+ * کارگاه تمرین صوتی و تحلیل زنده گام (Exercise & Live Pitch Workshop)
+ * تفکیک صریح میان «تمرین نت» و «آموزش ردیف»
+ * اتصال به مدل کوک مدال شور (SHOUR_MODAL_PROFILE) و ارزیابی لحظه‌ای با میکروفون
+ */
+
 import React, { useState, useEffect } from 'react';
-import { Mic, CheckCircle2, RotateCcw, Award, Volume2, ArrowLeft, ArrowRight, Play, Sparkles, BookOpen } from 'lucide-react';
+import {
+  Mic,
+  CheckCircle2,
+  RotateCcw,
+  Award,
+  Volume2,
+  ArrowLeft,
+  ArrowRight,
+  Play,
+  Sparkles,
+  BookOpen,
+  Info,
+  Compass,
+  Sliders,
+} from 'lucide-react';
 import { EXERCISES } from '../data/exercises';
 import { Exercise, ExerciseTargetNote } from '../types/music';
 import { PersianTuner } from '../components/PersianTuner';
 import { ProgressStorage } from '../services/storage';
-import { PageRoute } from '../components/Navbar';
 import { persianSynth } from '../services/audio/synthPlayer';
+import { microphoneManager } from '../services/audio/microphoneManager';
+import {
+  SHOUR_MODAL_PROFILE,
+  SEGAH_MODAL_PROFILE,
+  VAZIRI_24TET_PROFILE,
+} from '../services/audio/pitch/tuningProfiles';
 
 interface ExercisePageProps {
   initialExerciseId?: string | null;
@@ -20,6 +45,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     initialExerciseId || EXERCISES[0].id
   );
   const [mode, setMode] = useState<'exercise' | 'free_tuner'>('exercise');
+  const [categoryFilter, setCategoryFilter] = useState<'shour' | 'all'>('shour');
   const [currentNoteIndex, setCurrentNoteIndex] = useState<number>(0);
   const [exerciseResult, setExerciseResult] = useState<{
     score: number;
@@ -30,6 +56,17 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
   const currentExercise = EXERCISES.find((e) => e.id === selectedExerciseId) || EXERCISES[0];
   const targetNote: ExerciseTargetNote | null =
     mode === 'exercise' ? currentExercise.targetNotes[currentNoteIndex] || null : null;
+
+  // تنظیم پروفایل کوک متناظر با تمرین انتخابی
+  useEffect(() => {
+    if (currentExercise.tuningProfileId === 'shour_modal') {
+      microphoneManager.setTuningProfile(SHOUR_MODAL_PROFILE);
+    } else if (currentExercise.tuningProfileId === 'segah_modal') {
+      microphoneManager.setTuningProfile(SEGAH_MODAL_PROFILE);
+    } else {
+      microphoneManager.setTuningProfile(VAZIRI_24TET_PROFILE);
+    }
+  }, [currentExercise]);
 
   useEffect(() => {
     if (initialExerciseId) {
@@ -72,41 +109,74 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     setExerciseResult(null);
   };
 
+  // پخش نمونه صوتی نت فعلی
+  const handlePlayCurrentTargetNote = async () => {
+    if (!targetNote) return;
+    if (targetNote.noteFa.includes('کُرُن')) {
+      await persianSynth.playFrequency(targetNote.frequencyHz, 1.8);
+    } else {
+      await persianSynth.playNoteByName(targetNote.noteFa.split(' ')[0], 4, 1.8);
+    }
+  };
+
+  // پخش کل فراز ملودی با سنتور
   const playEntireExerciseMelody = async () => {
     const seq = currentExercise.targetNotes.map((n) => ({
       note: n.noteFa.split(' ')[0],
       duration: 1.2,
+      frequency: n.frequencyHz,
     }));
     await persianSynth.playMelody(seq);
   };
 
+  const filteredExercises = categoryFilter === 'shour'
+    ? EXERCISES.filter((e) => e.dastgahId === 'shour')
+    : EXERCISES;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 pb-28">
-      {/* Page Title */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 pb-28 text-stone-900">
+      {/* دکمه بازگشت به دستگاه شور */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => onNavigate('/dastgahs/shour')}
+          className="inline-flex items-center gap-2 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors"
+        >
+          <ArrowRight className="w-4 h-4" />
+          <span>بازگشت به مسیر آموزشی دستگاه شور</span>
+        </button>
+
+        {currentExercise.tuningProfileId === 'shour_modal' && (
+          <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-300">
+            پروفایل کوک: شور سنتی سل (لا کُرُن ۴۲۶.۲Hz)
+          </span>
+        )}
+      </div>
+
+      {/* سربرگ صفحه کارگاه */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-5">
         <div>
           <span className="text-xs font-bold text-amber-700 uppercase tracking-widest block mb-1">
-            کارگاه عملی آکوستیک
+            کارگاه عملی آکوستیک و سنجش حنجره
           </span>
           <h1 className="text-3xl font-extrabold text-stone-900 tracking-tight">
             کارگاه تمرین صوتی و تحلیل زنده گام
           </h1>
-          <p className="text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
-            صدای خود را از طریق میکروفون وارد کنید. سامانه با استفاده از وب‌آدیو و فواصل ربع‌پرده‌ای، فرکانس صدای شما را سنجیده و انحراف سنت را لحظه‌به‌لحظه نمایش می‌دهد.
+          <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
+            صدای خود را بشنوید، زمزمه کنید و در برابر میکروفون بخوانید. سامانه انحراف سنت و پایداری فرکانس شما را با مدل کوک ردیف می‌سنجد.
           </p>
         </div>
 
-        {/* Mode Selector */}
+        {/* انتخابگر حالت کارگاه */}
         <div className="flex items-center gap-1 p-1 bg-stone-200/80 rounded-lg shrink-0">
           <button
             onClick={() => setMode('exercise')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
               mode === 'exercise'
-                ? 'bg-white text-stone-950 shadow-xs'
+                ? 'bg-white text-stone-950 shadow-xs font-bold'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            تمرین‌های مرحله‌ای
+            تمرین‌های مدون شور
           </button>
           <button
             onClick={() => {
@@ -115,7 +185,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
             }}
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
               mode === 'free_tuner'
-                ? 'bg-white text-stone-950 shadow-xs'
+                ? 'bg-white text-stone-950 shadow-xs font-bold'
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -125,15 +195,49 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Interactive Tuner & Visualizer */}
+        {/* ستون راست و میانی: تیونر تعاملی و نشانگر نغمات هدف */}
         <div className="lg:col-span-2 space-y-6">
+          {/* کارت وضعیت تمرین جاری */}
+          {mode === 'exercise' && (
+            <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-3 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    {currentExercise.musicalContext === 'radif_phrase'
+                      ? 'آموزش ردیف: فراز ملودیک'
+                      : currentExercise.musicalContext === 'single_note_pitch'
+                      ? 'تمرین کوک: تثبیت فرکانس'
+                      : 'تمرین شنیداری: تمایز فواصل'}
+                  </span>
+                  <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
+                    {currentExercise.titleFa}
+                  </h2>
+                </div>
+
+                <button
+                  onClick={handlePlayCurrentTargetNote}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors"
+                  title="شنیدن فرکانس دقیق سنتور پیش از خواندن"
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+                  <span>شنیدن نت هدف با سنتور</span>
+                </button>
+              </div>
+
+              <p className="text-xs text-stone-600 leading-relaxed">
+                {currentExercise.descriptionFa}
+              </p>
+            </div>
+          )}
+
+          {/* کامپوننت تیونر اصلی */}
           <PersianTuner
             targetNote={targetNote}
             onMatchSuccess={handleMatchSuccess}
             showCanvasGraph={true}
           />
 
-          {/* Exercise Completion Result Card */}
+          {/* کارت ثبت و بازخورد نتیجه تمرین */}
           {exerciseResult && (
             <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4 animate-in fade-in">
               <div className="flex items-center justify-between">
@@ -149,10 +253,10 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                   </div>
                   <div>
                     <h3 className="font-bold text-base text-stone-900">
-                      {exerciseResult.passed ? 'تمرین با موفقیت انجام شد!' : 'نیاز به تمرین بیشتر'}
+                      {exerciseResult.passed ? 'تمرین با موفقیت انجام شد!' : 'نیاز به تکرار و تمرکز بیشتر'}
                     </h3>
                     <span className="text-xs text-stone-500">
-                      نتیجه در سوابق کارنامه شما ثبت گردید
+                      نتیجه در کارنامه آموزشی شما ثبت شد
                     </span>
                   </div>
                 </div>
@@ -183,7 +287,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
             </div>
           )}
 
-          {/* Current Target Notes Stepper (when in exercise mode) */}
+          {/* استپر گام‌های نغمات هدف در تمرین */}
           {mode === 'exercise' && (
             <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
@@ -199,7 +303,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
                 {currentExercise.targetNotes.map((note, idx) => {
                   const isCurrent = idx === currentNoteIndex;
                   const isPassed = idx < currentNoteIndex;
@@ -209,7 +313,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                       key={idx}
                       className={`p-3 rounded-lg border text-center transition-all ${
                         isCurrent
-                          ? 'bg-amber-50 border-amber-500 shadow-sm'
+                          ? 'bg-amber-50 border-amber-500 shadow-sm ring-1 ring-amber-400'
                           : isPassed
                           ? 'bg-emerald-50/70 border-emerald-300 text-emerald-900'
                           : 'bg-stone-50 border-stone-200 text-stone-500'
@@ -222,8 +326,8 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                       <span className="font-bold text-sm text-stone-900 block">
                         {note.noteFa}
                       </span>
-                      <span className="text-[11px] font-mono text-stone-500">
-                        {Math.round(note.frequencyHz)} Hz
+                      <span className="text-[11px] font-mono text-stone-500 block mt-0.5">
+                        {Math.round(note.frequencyHz * 10) / 10} Hz
                       </span>
                     </div>
                   );
@@ -233,31 +337,52 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           )}
         </div>
 
-        {/* Right Column: Exercise Selection & Instructions */}
+        {/* ستون چپ: فهرست تمرین‌ها و راهنمای آموزشی */}
         <div className="space-y-6">
-          {/* Instructions Box */}
+          {/* جعبه راهنمای گام‌به‌گام */}
           <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-3 shadow-xs">
             <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>راهنمای اجرای صحیح</span>
+              <span>مراحل اجرای صحیح تمرین</span>
             </h3>
-            <ul className="space-y-2 text-xs text-stone-600 leading-relaxed list-disc list-inside">
+            <ul className="space-y-2 text-xs text-stone-600 leading-relaxed list-decimal list-inside">
               {currentExercise.instructionSteps.map((step, idx) => (
                 <li key={idx}>{step}</li>
               ))}
-              <li>در محیطی با نویز کم تمرین کنید و از هدفون استفاده نمایید تا صدای بلندگو دوباره وارد میکروفون نشود.</li>
+              <li>از هدفون استفاده کنید تا صدای ساز مجدداً وارد میکروفون نشود.</li>
             </ul>
           </div>
 
-          {/* Exercise List */}
+          {/* فهرست تمرین‌ها با فیلتر دستگاه شور */}
           <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-stone-900">فهرست تمرین‌های استاندارد</h3>
-              <span className="text-xs text-stone-400">{EXERCISES.length} تمرین</span>
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="font-bold text-sm text-stone-900">فهرست تمرین‌ها</h3>
+              <div className="flex items-center gap-1 text-[11px]">
+                <button
+                  onClick={() => setCategoryFilter('shour')}
+                  className={`px-2 py-0.5 rounded font-bold ${
+                    categoryFilter === 'shour'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  تمرین‌های شور
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('all')}
+                  className={`px-2 py-0.5 rounded font-bold ${
+                    categoryFilter === 'all'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  همه
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-2.5">
-              {EXERCISES.map((ex) => {
+            <div className="space-y-2.5 max-h-[460px] overflow-y-auto pl-1">
+              {filteredExercises.map((ex) => {
                 const isSelected = selectedExerciseId === ex.id && mode === 'exercise';
 
                 return (
@@ -266,7 +391,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                     onClick={() => handleSelectExercise(ex.id)}
                     className={`w-full text-right p-3.5 rounded-lg border transition-all ${
                       isSelected
-                        ? 'bg-amber-50/80 border-amber-400 shadow-xs'
+                        ? 'bg-amber-50/90 border-amber-400 shadow-xs ring-1 ring-amber-300'
                         : 'bg-stone-50/60 hover:bg-stone-100/80 border-stone-200/80'
                     }`}
                   >
@@ -275,15 +400,19 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                         {ex.titleFa}
                       </span>
                       <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${
-                          ex.difficulty === 'ساده'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : ex.difficulty === 'متوسط'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
+                        className={`text-[9px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
+                          ex.musicalContext === 'radif_phrase'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                            : ex.musicalContext === 'single_note_pitch'
+                            ? 'bg-sky-100 text-sky-900 border border-sky-200'
+                            : 'bg-stone-200 text-stone-700'
                         }`}
                       >
-                        {ex.difficulty}
+                        {ex.musicalContext === 'radif_phrase'
+                          ? 'ردیف'
+                          : ex.musicalContext === 'single_note_pitch'
+                          ? 'تک‌نت'
+                          : 'شنیداری'}
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">

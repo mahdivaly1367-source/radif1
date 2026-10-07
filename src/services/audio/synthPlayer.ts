@@ -95,6 +95,13 @@ export class PersianSynth {
   }
 
   /**
+   * پخش مستقیم یک فرکانس عددی دلخواه (برای مدل‌های کوک مدال سنتی)
+   */
+  public async playFrequency(frequency: number, durationSeconds = 1.4, volume = 0.4): Promise<void> {
+    await this.playTone({ frequency, durationSeconds, volume });
+  }
+
+  /**
    * پخش یک نت با نام فارسی (مانند "سل ۴"، "لا کُرُن ۴"، "می کُرُن")
    */
   public async playNoteByName(noteName: string, octave = 4, durationSeconds = 1.4): Promise<void> {
@@ -103,24 +110,32 @@ export class PersianSynth {
   }
 
   /**
-   * نواختن یک ملودی یا دنباله نغمه با تاخیر زمانی (مثلاً درآمد شور)
+   * نواختن یک ملودی یا دنباله نغمه با تاخیر زمانی (مثلاً درآمد شور) همراه با ضریب سرعت
    */
   public async playMelody(
-    notes: { note: string; octave?: number; duration: number }[],
+    notes: { note: string; octave?: number; duration: number; frequency?: number }[],
     onNoteChange?: (index: number, noteName: string) => void,
-    onFinish?: () => void
+    onFinish?: () => void,
+    speedMultiplier = 1.0
   ): Promise<() => void> {
     let isCancelled = false;
 
     const run = async () => {
+      const safeSpeed = Math.max(0.5, Math.min(2.0, speedMultiplier));
       for (let i = 0; i < notes.length; i++) {
         if (isCancelled) break;
         const item = notes[i];
         if (onNoteChange) {
           onNoteChange(i, item.note);
         }
-        await this.playNoteByName(item.note, item.octave || 4, item.duration * 0.9);
-        await new Promise((resolve) => setTimeout(resolve, item.duration * 1000));
+
+        const effectiveDuration = (item.duration / safeSpeed);
+        if (item.frequency) {
+          await this.playTone({ frequency: item.frequency, durationSeconds: effectiveDuration * 0.9 });
+        } else {
+          await this.playNoteByName(item.note, item.octave || 4, effectiveDuration * 0.9);
+        }
+        await new Promise((resolve) => setTimeout(resolve, effectiveDuration * 1000));
       }
       if (!isCancelled && onFinish) {
         onFinish();
