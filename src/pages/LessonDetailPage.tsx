@@ -64,7 +64,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
     };
   }, [cancelPlayFn]);
 
-  // پخش دنباله صوتی درس
+  // پخش دنباله صوتی درس با رعایت قانون اولویت فرکانس و اکتاو
   const handlePlaySequence = async () => {
     if (cancelPlayFn) {
       cancelPlayFn();
@@ -79,9 +79,12 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
 
     setIsPlayingSeq(true);
 
+    // اولویت قانون پخش: frequency > note name + octave > fallback با حفظ اکتاو دقیق
     const notes = lesson.audioGuide.notesSequence.map((n) => ({
-      ...n,
-      frequency: n.note === 'لا کُرُن' ? 426.2 : undefined, // اعمال فرکانس دقیق مدال شور
+      note: n.note,
+      duration: n.duration,
+      octave: n.octave,
+      frequency: n.frequency,
     }));
 
     const cancel = await persianSynth.playMelody(
@@ -98,14 +101,21 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
     setCancelPlayFn(() => cancel);
   };
 
-  // پخش یک نت منفرد با کلیک
-  const handlePlaySingleNote = async (noteName: string, index: number) => {
+  // پخش یک نت منفرد با کلیک با رعایت قانون اولویت: frequency > note name + octave > fallback
+  // با حفظ اکتاو واقعی (دو ۴ = ۲۶۱.۶Hz، دو ۵ = ۵۲۳.۲۵Hz، سل ۴ = ۳۹۲Hz، لا ۴ = ۴۴۰Hz، لا کُرُن = ۴۲۶.۲Hz)
+  const handlePlaySingleNote = async (
+    item: { note: string; duration: number; octave?: number; frequency?: number },
+    index: number
+  ) => {
     setActiveNoteIndex(index);
-    if (noteName === 'لا کُرُن') {
-      await persianSynth.playFrequency(426.2, 1.4);
-    } else {
-      await persianSynth.playNoteByName(noteName, 4, 1.4);
-    }
+    await persianSynth.playNote(
+      {
+        frequency: item.frequency,
+        note: item.note,
+        octave: item.octave,
+      },
+      1.4
+    );
     setTimeout(() => {
       setActiveNoteIndex(null);
     }, 800);
@@ -299,7 +309,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
               return (
                 <button
                   key={idx}
-                  onClick={() => handlePlaySingleNote(item.note, idx)}
+                  onClick={() => handlePlaySingleNote(item, idx)}
                   className={`p-3 rounded-xl border text-center transition-all min-w-[70px] ${
                     isCurrent
                       ? 'bg-amber-400 border-amber-300 text-stone-950 scale-105 shadow-md font-bold'

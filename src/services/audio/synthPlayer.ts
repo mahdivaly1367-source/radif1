@@ -102,15 +102,36 @@ export class PersianSynth {
   }
 
   /**
-   * پخش یک نت با نام فارسی (مانند "سل ۴"، "لا کُرُن ۴"، "می کُرُن")
+   * پخش نت بر مبنای اولویت قانون سه‌گانه:
+   * frequency > note name + octave > fallback
    */
-  public async playNoteByName(noteName: string, octave = 4, durationSeconds = 1.4): Promise<void> {
-    const freq = getNoteFrequencyByName(noteName, octave);
+  public async playNote(
+    item: { note?: string; octave?: number; frequency?: number },
+    durationSeconds = 1.4,
+    volume = 0.4
+  ): Promise<void> {
+    if (item.frequency && item.frequency > 0) {
+      await this.playTone({ frequency: item.frequency, durationSeconds, volume });
+      return;
+    }
+    if (item.note) {
+      const freq = getNoteFrequencyByName(item.note, item.octave);
+      await this.playTone({ frequency: freq, durationSeconds, volume });
+      return;
+    }
+    await this.playTone({ frequency: 440.0, durationSeconds, volume });
+  }
+
+  /**
+   * پخش یک نت با نام فارسی (مانند "دو ۴"، "دو ۵"، "لا کُرُن ۴") با حفظ دقیق اکتاو
+   */
+  public async playNoteByName(noteName: string, octave?: number, durationSeconds = 1.4): Promise<void> {
+    const freq = getNoteFrequencyByName(noteName, octave ?? 4);
     await this.playTone({ frequency: freq, durationSeconds });
   }
 
   /**
-   * نواختن یک ملودی یا دنباله نغمه با تاخیر زمانی (مثلاً درآمد شور) همراه با ضریب سرعت
+   * نواختن یک ملودی یا دنباله نغمه با تاخیر زمانی همراه با ضریب سرعت و حفظ اکتاو/فرکانس
    */
   public async playMelody(
     notes: { note: string; octave?: number; duration: number; frequency?: number }[],
@@ -130,10 +151,12 @@ export class PersianSynth {
         }
 
         const effectiveDuration = (item.duration / safeSpeed);
-        if (item.frequency) {
+        // اولویت قانون پخش: frequency > note name + octave > fallback
+        if (item.frequency && item.frequency > 0) {
           await this.playTone({ frequency: item.frequency, durationSeconds: effectiveDuration * 0.9 });
         } else {
-          await this.playNoteByName(item.note, item.octave || 4, effectiveDuration * 0.9);
+          const freq = getNoteFrequencyByName(item.note, item.octave);
+          await this.playTone({ frequency: freq, durationSeconds: effectiveDuration * 0.9 });
         }
         await new Promise((resolve) => setTimeout(resolve, effectiveDuration * 1000));
       }

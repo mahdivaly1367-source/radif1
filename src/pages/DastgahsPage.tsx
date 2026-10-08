@@ -28,7 +28,7 @@ export const DastgahsPage: React.FC<DastgahsPageProps> = ({ onNavigate, onSelect
 
   const playTonic = async (e: React.MouseEvent, noteName: string) => {
     e.stopPropagation();
-    await persianSynth.playNoteByName(noteName.split(' ')[0], 4, 1.6);
+    await persianSynth.playNoteByName(noteName, undefined, 1.6);
   };
 
   return (

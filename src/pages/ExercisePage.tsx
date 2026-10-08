@@ -1,7 +1,9 @@
 /**
- * کارگاه تمرین صوتی و تحلیل زنده گام (Exercise & Live Pitch Workshop)
- * تفکیک صریح میان «تمرین نت» و «آموزش ردیف»
- * اتصال به مدل کوک مدال شور (SHOUR_MODAL_PROFILE) و ارزیابی لحظه‌ای با میکروفون
+ * کارگاه تمرین صوتی و تحلیل زنده گام (Exercise & Ear Training Workshop)
+ * تفکیک صریح میان:
+ * 1. listening -> Ear Training Quiz UI (تمرین شنیداری بدون نیاز به میکروفون)
+ * 2. single_note -> Microphone + Pitch (تمرین صوتی تک‌نت)
+ * 3. melody_phrase -> Microphone + Phrase Exercise (تمرین صوتی فراز ردیف)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -19,10 +21,12 @@ import {
   Info,
   Compass,
   Sliders,
+  Headphones,
 } from 'lucide-react';
 import { EXERCISES } from '../data/exercises';
 import { Exercise, ExerciseTargetNote } from '../types/music';
 import { PersianTuner } from '../components/PersianTuner';
+import { EarTrainingQuiz } from '../components/EarTrainingQuiz';
 import { ProgressStorage } from '../services/storage';
 import { persianSynth } from '../services/audio/synthPlayer';
 import { microphoneManager } from '../services/audio/microphoneManager';
@@ -54,19 +58,28 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
   } | null>(null);
 
   const currentExercise = EXERCISES.find((e) => e.id === selectedExerciseId) || EXERCISES[0];
-  const targetNote: ExerciseTargetNote | null =
-    mode === 'exercise' ? currentExercise.targetNotes[currentNoteIndex] || null : null;
+  const isListeningType = currentExercise.type === 'listening';
 
-  // تنظیم پروفایل کوک متناظر با تمرین انتخابی
+  const targetNote: ExerciseTargetNote | null =
+    mode === 'exercise' && !isListeningType
+      ? currentExercise.targetNotes[currentNoteIndex] || null
+      : null;
+
+  // تنظیم پروفایل کوک متناظر با تمرین و قطع میکروفون در تمرین‌های شنیداری
   useEffect(() => {
-    if (currentExercise.tuningProfileId === 'shour_modal') {
-      microphoneManager.setTuningProfile(SHOUR_MODAL_PROFILE);
-    } else if (currentExercise.tuningProfileId === 'segah_modal') {
-      microphoneManager.setTuningProfile(SEGAH_MODAL_PROFILE);
+    if (isListeningType) {
+      // در تمرین شنیداری میکروفون نباید فعال باشد
+      microphoneManager.stop();
     } else {
-      microphoneManager.setTuningProfile(VAZIRI_24TET_PROFILE);
+      if (currentExercise.tuningProfileId === 'shour_modal') {
+        microphoneManager.setTuningProfile(SHOUR_MODAL_PROFILE);
+      } else if (currentExercise.tuningProfileId === 'segah_modal') {
+        microphoneManager.setTuningProfile(SEGAH_MODAL_PROFILE);
+      } else {
+        microphoneManager.setTuningProfile(VAZIRI_24TET_PROFILE);
+      }
     }
-  }, [currentExercise]);
+  }, [currentExercise, isListeningType]);
 
   useEffect(() => {
     if (initialExerciseId) {
@@ -100,6 +113,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
         averageCentsDeviation: avgCents,
         durationSeconds: 30,
         passed,
+        attemptType: 'microphone_pitch',
       });
     }
   };
@@ -109,20 +123,19 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     setExerciseResult(null);
   };
 
-  // پخش نمونه صوتی نت فعلی
+  // پخش نمونه صوتی نت فعلی با رعایت اولویت فرکانس و حفظ اکتاو
   const handlePlayCurrentTargetNote = async () => {
     if (!targetNote) return;
-    if (targetNote.noteFa.includes('کُرُن')) {
-      await persianSynth.playFrequency(targetNote.frequencyHz, 1.8);
-    } else {
-      await persianSynth.playNoteByName(targetNote.noteFa.split(' ')[0], 4, 1.8);
-    }
+    await persianSynth.playNote({
+      note: targetNote.noteFa,
+      frequency: targetNote.frequencyHz,
+    }, 1.8);
   };
 
   // پخش کل فراز ملودی با سنتور
   const playEntireExerciseMelody = async () => {
     const seq = currentExercise.targetNotes.map((n) => ({
-      note: n.noteFa.split(' ')[0],
+      note: n.noteFa,
       duration: 1.2,
       frequency: n.frequencyHz,
     }));
@@ -145,24 +158,34 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           <span>بازگشت به مسیر آموزشی دستگاه شور</span>
         </button>
 
-        {currentExercise.tuningProfileId === 'shour_modal' && (
-          <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-300">
-            پروفایل کوک: شور سنتی سل (لا کُرُن ۴۲۶.۲Hz)
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {isListeningType ? (
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-purple-100 text-purple-900 font-bold border border-purple-300 flex items-center gap-1.5">
+              <Headphones className="w-3.5 h-3.5" />
+              <span>تمرین شنیداری (بدون نیاز به میکروفون)</span>
+            </span>
+          ) : (
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-300 flex items-center gap-1.5">
+              <Mic className="w-3.5 h-3.5" />
+              <span>تمرین صوتی (با میکروفون)</span>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* سربرگ صفحه کارگاه */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-5">
         <div>
           <span className="text-xs font-bold text-amber-700 uppercase tracking-widest block mb-1">
-            کارگاه عملی آکوستیک و سنجش حنجره
+            {isListeningType ? 'کارگاه تربیت شنوایی و درک فواصل' : 'کارگاه عملی آکوستیک و سنجش حنجره'}
           </span>
           <h1 className="text-3xl font-extrabold text-stone-900 tracking-tight">
-            کارگاه تمرین صوتی و تحلیل زنده گام
+            {isListeningType ? 'تمرین شنیداری و تمایز فواصل ردیف' : 'کارگاه تمرین صوتی و تحلیل زنده گام'}
           </h1>
           <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
-            صدای خود را بشنوید، زمزمه کنید و در برابر میکروفون بخوانید. سامانه انحراف سنت و پایداری فرکانس شما را با مدل کوک ردیف می‌سنجد.
+            {isListeningType
+              ? 'الگوی صوتی ساز را با گوش بشنوید و گزینه‌ها را پاسخ دهید. در این بخش نیازی به میکروفون نیست.'
+              : 'صدای خود را بشنوید، زمزمه کنید و در برابر میکروفون بخوانید. سامانه انحراف سنت و پایداری صدا را می‌سنجد.'}
           </p>
         </div>
 
@@ -195,145 +218,153 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* ستون راست و میانی: تیونر تعاملی و نشانگر نغمات هدف */}
+        {/* ستون راست و میانی: تیونر یا کوییز شنیداری */}
         <div className="lg:col-span-2 space-y-6">
-          {/* کارت وضعیت تمرین جاری */}
-          {mode === 'exercise' && (
-            <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-3 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    {currentExercise.musicalContext === 'radif_phrase'
-                      ? 'آموزش ردیف: فراز ملودیک'
-                      : currentExercise.musicalContext === 'single_note_pitch'
-                      ? 'تمرین کوک: تثبیت فرکانس'
-                      : 'تمرین شنیداری: تمایز فواصل'}
-                  </span>
-                  <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
-                    {currentExercise.titleFa}
-                  </h2>
-                </div>
-
-                <button
-                  onClick={handlePlayCurrentTargetNote}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors"
-                  title="شنیدن فرکانس دقیق سنتور پیش از خواندن"
-                >
-                  <Volume2 className="w-3.5 h-3.5 text-amber-700" />
-                  <span>شنیدن نت هدف با سنتور</span>
-                </button>
-              </div>
-
-              <p className="text-xs text-stone-600 leading-relaxed">
-                {currentExercise.descriptionFa}
-              </p>
-            </div>
-          )}
-
-          {/* کامپوننت تیونر اصلی */}
-          <PersianTuner
-            targetNote={targetNote}
-            onMatchSuccess={handleMatchSuccess}
-            showCanvasGraph={true}
-          />
-
-          {/* کارت ثبت و بازخورد نتیجه تمرین */}
-          {exerciseResult && (
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4 animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                      exerciseResult.passed
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base text-stone-900">
-                      {exerciseResult.passed ? 'تمرین با موفقیت انجام شد!' : 'نیاز به تکرار و تمرکز بیشتر'}
-                    </h3>
-                    <span className="text-xs text-stone-500">
-                      نتیجه در کارنامه آموزشی شما ثبت شد
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleRestartExercise}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>تکرار مجدد تمرین</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200/80 text-center">
-                <div>
-                  <span className="text-xs text-stone-500 block">امتیاز کسب‌شده</span>
-                  <span className="text-2xl font-black text-amber-600 font-mono">
-                    {exerciseResult.score} / ۱۰۰
-                  </span>
-                </div>
-                <div>
-                  <span className="text-xs text-stone-500 block">میانگین خطای فرکانسی</span>
-                  <span className="text-2xl font-black text-stone-800 font-mono">
-                    ±{exerciseResult.averageCents} سنت
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* استپر گام‌های نغمات هدف در تمرین */}
-          {mode === 'exercise' && (
-            <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm text-stone-900">
-                  توالی نغمات این تمرین (پله {currentNoteIndex + 1} از {currentExercise.targetNotes.length})
-                </h3>
-                <button
-                  onClick={playEntireExerciseMelody}
-                  className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800 transition-colors"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>پخش کل الگو با سنتور</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
-                {currentExercise.targetNotes.map((note, idx) => {
-                  const isCurrent = idx === currentNoteIndex;
-                  const isPassed = idx < currentNoteIndex;
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg border text-center transition-all ${
-                        isCurrent
-                          ? 'bg-amber-50 border-amber-500 shadow-sm ring-1 ring-amber-400'
-                          : isPassed
-                          ? 'bg-emerald-50/70 border-emerald-300 text-emerald-900'
-                          : 'bg-stone-50 border-stone-200 text-stone-500'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
-                        <span>پله {idx + 1}</span>
-                        {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
-                      </div>
-                      <span className="font-bold text-sm text-stone-900 block">
-                        {note.noteFa}
+          {/* حالت ۱: تمرین شنیداری (EAR TRAINING QUIZ UI) */}
+          {mode === 'exercise' && isListeningType ? (
+            <EarTrainingQuiz
+              exercise={currentExercise}
+              onNavigateLesson={() => onNavigate('/dastgahs/shour')}
+            />
+          ) : (
+            /* حالت ۲ و ۳: تمرین صوتی با میکروفون (تک‌نت یا فراز ردیف) یا تیونر آزاد */
+            <>
+              {mode === 'exercise' && (
+                <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-3 shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        {currentExercise.musicalContext === 'radif_phrase'
+                          ? 'آموزش ردیف: فراز ملودیک'
+                          : 'تمرین صوتی: تثبیت فرکانس تک‌نت'}
                       </span>
-                      <span className="text-[11px] font-mono text-stone-500 block mt-0.5">
-                        {Math.round(note.frequencyHz * 10) / 10} Hz
+                      <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
+                        {currentExercise.titleFa}
+                      </h2>
+                    </div>
+
+                    <button
+                      onClick={handlePlayCurrentTargetNote}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors"
+                      title="شنیدن فرکانس دقیق سنتور پیش از خواندن"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+                      <span>شنیدن نت هدف با سنتور</span>
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-stone-600 leading-relaxed">
+                    {currentExercise.descriptionFa}
+                  </p>
+                </div>
+              )}
+
+              {/* کامپوننت تیونر اصلی برای تمرین‌های صوتی */}
+              <PersianTuner
+                targetNote={targetNote}
+                onMatchSuccess={handleMatchSuccess}
+                showCanvasGraph={true}
+              />
+
+              {/* کارت ثبت و بازخورد نتیجه تمرین صوتی */}
+              {exerciseResult && (
+                <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4 animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                          exerciseResult.passed
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-base text-stone-900">
+                          {exerciseResult.passed ? 'تمرین صوتی با موفقیت انجام شد!' : 'نیاز به تکرار و تمرکز بیشتر'}
+                        </h3>
+                        <span className="text-xs text-stone-500">
+                          نتیجه در کارنامه آموزشی شما ثبت شد
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleRestartExercise}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>تکرار مجدد تمرین</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200/80 text-center">
+                    <div>
+                      <span className="text-xs text-stone-500 block">امتیاز کسب‌شده</span>
+                      <span className="text-2xl font-black text-amber-600 font-mono">
+                        {exerciseResult.score} / ۱۰۰
                       </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                    <div>
+                      <span className="text-xs text-stone-500 block">میانگین خطای فرکانسی</span>
+                      <span className="text-2xl font-black text-stone-800 font-mono">
+                        ±{exerciseResult.averageCents} سنت
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* استپر گام‌های نغمات هدف در تمرین صوتی */}
+              {mode === 'exercise' && (
+                <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-sm text-stone-900">
+                      توالی نغمات این تمرین (پله {currentNoteIndex + 1} از {currentExercise.targetNotes.length})
+                    </h3>
+                    <button
+                      onClick={playEntireExerciseMelody}
+                      className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800 transition-colors"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>پخش کل الگو با سنتور</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
+                    {currentExercise.targetNotes.map((note, idx) => {
+                      const isCurrent = idx === currentNoteIndex;
+                      const isPassed = idx < currentNoteIndex;
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-lg border text-center transition-all ${
+                            isCurrent
+                              ? 'bg-amber-50 border-amber-500 shadow-sm ring-1 ring-amber-400'
+                              : isPassed
+                              ? 'bg-emerald-50/70 border-emerald-300 text-emerald-900'
+                              : 'bg-stone-50 border-stone-200 text-stone-500'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[10px] text-stone-400 mb-1">
+                            <span>پله {idx + 1}</span>
+                            {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                          </div>
+                          <span className="font-bold text-sm text-stone-900 block">
+                            {note.noteFa}
+                          </span>
+                          <span className="text-[11px] font-mono text-stone-500 block mt-0.5">
+                            {Math.round(note.frequencyHz * 10) / 10} Hz
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -343,13 +374,12 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-3 shadow-xs">
             <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>مراحل اجرای صحیح تمرین</span>
+              <span>مراحل اجرای صحیح</span>
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 leading-relaxed list-decimal list-inside">
               {currentExercise.instructionSteps.map((step, idx) => (
                 <li key={idx}>{step}</li>
               ))}
-              <li>از هدفون استفاده کنید تا صدای ساز مجدداً وارد میکروفون نشود.</li>
             </ul>
           </div>
 
@@ -384,6 +414,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
             <div className="space-y-2.5 max-h-[460px] overflow-y-auto pl-1">
               {filteredExercises.map((ex) => {
                 const isSelected = selectedExerciseId === ex.id && mode === 'exercise';
+                const isExListening = ex.type === 'listening';
 
                 return (
                   <button
@@ -401,18 +432,18 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                       </span>
                       <span
                         className={`text-[9px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
-                          ex.musicalContext === 'radif_phrase'
+                          isExListening
+                            ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                            : ex.musicalContext === 'radif_phrase'
                             ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                            : ex.musicalContext === 'single_note_pitch'
-                            ? 'bg-sky-100 text-sky-900 border border-sky-200'
-                            : 'bg-stone-200 text-stone-700'
+                            : 'bg-sky-100 text-sky-900 border border-sky-200'
                         }`}
                       >
-                        {ex.musicalContext === 'radif_phrase'
-                          ? 'ردیف'
-                          : ex.musicalContext === 'single_note_pitch'
-                          ? 'تک‌نت'
-                          : 'شنیداری'}
+                        {isExListening
+                          ? 'تمرین شنیداری'
+                          : ex.musicalContext === 'radif_phrase'
+                          ? 'تمرین ردیف'
+                          : 'تمرین تک‌نت'}
                       </span>
                     </div>
                     <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">

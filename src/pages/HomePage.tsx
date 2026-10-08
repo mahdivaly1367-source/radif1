@@ -15,7 +15,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
   const playDastgahTonic = async (e: React.MouseEvent, noteName: string) => {
     e.stopPropagation();
-    await persianSynth.playNoteByName(noteName.split(' ')[0], 4, 1.8);
+    await persianSynth.playNoteByName(noteName, undefined, 1.8);
   };
 
   return (

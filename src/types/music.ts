@@ -92,7 +92,7 @@ export interface Lesson {
   };
   audioGuide: {
     description: string;
-    notesSequence: { note: string; duration: number }[];
+    notesSequence: { note: string; duration: number; octave?: number; frequency?: number }[];
     tempoBpm: number;
   };
   performanceTips: string[];
@@ -216,6 +216,9 @@ export interface UserPracticeAttempt {
   averageCentsDeviation: number;
   durationSeconds: number;
   passed: boolean;
+  attemptType?: 'microphone_pitch' | 'ear_training';
+  correctAnswers?: number;
+  totalQuestions?: number;
 }
 
 export interface UserProgress {
