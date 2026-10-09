@@ -49,7 +49,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     initialExerciseId || EXERCISES[0].id
   );
   const [mode, setMode] = useState<'exercise' | 'free_tuner'>('exercise');
-  const [categoryFilter, setCategoryFilter] = useState<'shour' | 'all'>('shour');
+  const [categoryFilter, setCategoryFilter] = useState<'shour' | 'mahour' | 'all'>('shour');
   const [currentNoteIndex, setCurrentNoteIndex] = useState<number>(0);
   const [exerciseResult, setExerciseResult] = useState<{
     score: number;
@@ -87,6 +87,13 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
       setMode('exercise');
       setCurrentNoteIndex(0);
       setExerciseResult(null);
+
+      const found = EXERCISES.find((e) => e.id === initialExerciseId);
+      if (found?.dastgahId === 'mahour') {
+        setCategoryFilter('mahour');
+      } else if (found?.dastgahId === 'shour') {
+        setCategoryFilter('shour');
+      }
     }
   }, [initialExerciseId]);
 
@@ -142,20 +149,26 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     await persianSynth.playMelody(seq);
   };
 
-  const filteredExercises = categoryFilter === 'shour'
-    ? EXERCISES.filter((e) => e.dastgahId === 'shour')
-    : EXERCISES;
+  const filteredExercises =
+    categoryFilter === 'shour'
+      ? EXERCISES.filter((e) => e.dastgahId === 'shour')
+      : categoryFilter === 'mahour'
+      ? EXERCISES.filter((e) => e.dastgahId === 'mahour')
+      : EXERCISES;
+
+  const currentDastgahId = currentExercise.dastgahId || 'shour';
+  const currentDastgahName = currentDastgahId === 'mahour' ? 'ماهور' : currentDastgahId === 'shour' ? 'شور' : 'ردیف';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 pb-28 text-stone-900">
-      {/* دکمه بازگشت به دستگاه شور */}
+      {/* دکمه بازگشت به دستگاه */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => onNavigate('/dastgahs/shour')}
+          onClick={() => onNavigate(`/dastgahs/${currentDastgahId}`)}
           className="inline-flex items-center gap-2 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
-          <span>بازگشت به مسیر آموزشی دستگاه شور</span>
+          <span>بازگشت به مسیر آموزشی دستگاه {currentDastgahName}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -199,7 +212,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            تمرین‌های مدون شور
+            تمرین‌های مدون {categoryFilter === 'mahour' ? 'ماهور' : categoryFilter === 'shour' ? 'شور' : 'ردیف'}
           </button>
           <button
             onClick={() => {
@@ -224,7 +237,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
           {mode === 'exercise' && isListeningType ? (
             <EarTrainingQuiz
               exercise={currentExercise}
-              onNavigateLesson={() => onNavigate('/dastgahs/shour')}
+              onNavigateLesson={() => onNavigate(`/dastgahs/${currentDastgahId}`)}
             />
           ) : (
             /* حالت ۲ و ۳: تمرین صوتی با میکروفون (تک‌نت یا فراز ردیف) یا تیونر آزاد */
@@ -383,7 +396,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
             </ul>
           </div>
 
-          {/* فهرست تمرین‌ها با فیلتر دستگاه شور */}
+          {/* فهرست تمرین‌ها با فیلتر دستگاه */}
           <div className="bg-white rounded-xl border border-stone-200 p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="font-bold text-sm text-stone-900">فهرست تمرین‌ها</h3>
@@ -396,7 +409,17 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                       : 'text-stone-500 hover:text-stone-900'
                   }`}
                 >
-                  تمرین‌های شور
+                  شور
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('mahour')}
+                  className={`px-2 py-0.5 rounded font-bold ${
+                    categoryFilter === 'mahour'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  ماهور
                 </button>
                 <button
                   onClick={() => setCategoryFilter('all')}

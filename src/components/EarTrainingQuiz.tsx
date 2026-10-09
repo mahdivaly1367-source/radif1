@@ -694,6 +694,209 @@ function buildQuestionsForExercise(exercise: Exercise): QuizQuestion[] {
     });
   }
 
+  // تمرین شنیداری فواصل دانگ اول ماهور (ex_mahour_listen_scale)
+  if (exercise.id === 'ex_mahour_listen_scale') {
+    const rawMahourScale = [
+      {
+        id: 'q_mhr_sc_1',
+        prompt: 'دو نغمه پیاپی پخش شد (دو ۴ به رِ ۴). فاصله شنیده‌شده میان این دو نغمه چیست؟',
+        audioItems: [
+          { note: 'دو ۴', frequency: 261.63, duration: 1.2 },
+          { note: 'رِ ۴', frequency: 293.66, duration: 1.8 },
+        ],
+        correct: 'فاصله پرده کامل طنینی (۲۰۰ سنت - دوم بزرگ)',
+        wrongs: [
+          'فاصله نیم‌پرده کوچک (۱۰۰ سنت)',
+          'فاصله سه ربع پرده خنثی (۱۵۰ سنت)',
+          'فاصله سوم کوچک (۳۰۰ سنت)',
+        ],
+        explanation:
+          'فاصله میان نت پایه دو ۴ و درجه دوم رِ ۴ در ماهور، یک پرده کامل طنینی (۲۰۰ سنت) بدون هیچ ریزپرده است.',
+      },
+      {
+        id: 'q_mhr_sc_2',
+        prompt: 'دو نغمه پخش شدند (می ۴ به فا ۴). فاصله این دو نغمه متوالی در انتهای دانگ اول چیست؟',
+        audioItems: [
+          { note: 'می ۴', frequency: 329.63, duration: 1.2 },
+          { note: 'فا ۴', frequency: 349.23, duration: 1.8 },
+        ],
+        correct: 'فاصله نیم‌پرده طبیعی (۱۰۰ سنت - دوم کوچک)',
+        wrongs: [
+          'فاصله پرده کامل طنینی (۲۰۰ سنت)',
+          'فاصله سه ربع پرده مجنب (۱۵۰ سنت)',
+          'فاصله چهارم درست (۵۰۰ سنت)',
+        ],
+        explanation:
+          'فاصله میان درجه سوم (می ۴) و درجه چهارم (فا ۴) در ماهور، یک نیم‌پرده طبیعی دیاکوتیک (حدود ۱۰۰ سنت) است که دانگ ماژور را تکمیل می‌کند.',
+      },
+      {
+        id: 'q_mhr_sc_3',
+        prompt: 'دو نغمه با پرش سوم پخش شدند (دو ۴ به می ۴). این فاصله مهم در ماهور چه نام دارد؟',
+        audioItems: [
+          { note: 'دو ۴', frequency: 261.63, duration: 1.2 },
+          { note: 'می ۴', frequency: 329.63, duration: 2.0 },
+        ],
+        correct: 'فاصله سوم بزرگ طبیعی (۴۰۰ سنت - دو به می)',
+        wrongs: [
+          'فاصله سوم کوچک غمگین (۳۰۰ سنت - دو به می بمل)',
+          'فاصله سوم خنثی ایرانی (۳۵۰ سنت - دو به می کُرُن)',
+          'فاصله پنجم درست (۷۰۰ سنت)',
+        ],
+        explanation:
+          'فاصله دو تا می فاصله سوم بزرگ مطبوع (۴۰۰ سنت) است که احساس سرزندگی و صلابت شاخص ماهور را خلق می‌کند.',
+      },
+      {
+        id: 'q_mhr_sc_4',
+        prompt: 'جهش نغمگی صعودی از نت پایه دو ۴ به نت فا ۴ شنیده شد. این فاصله چیست؟',
+        audioItems: [
+          { note: 'دو ۴', frequency: 261.63, duration: 1.2 },
+          { note: 'فا ۴', frequency: 349.23, duration: 2.0 },
+        ],
+        correct: 'فاصله چهارم درست (۵۰۰ سنت - گستره دانگ اول ماهور)',
+        wrongs: [
+          'فاصله سوم بزرگ (۴۰۰ سنت)',
+          'فاصله پنجم درست (۷۰۰ سنت)',
+          'فاصله اکتاو کامل (۱۲۰۰ سنت)',
+        ],
+        explanation:
+          'فاصله دو تا فا دقیقاً ۵۰۰ سنت (فاصله چهارم درست) است که محدوده دانگ اول ماهور را تعیین می‌کند.',
+      },
+      {
+        id: 'q_mhr_sc_5',
+        prompt: 'توالی صوتی دانگ اول ماهور (دو، ر، می، فا) نواخته شد. نظم فواصل آن چگونه است؟',
+        audioItems: [
+          { note: 'دو ۴', frequency: 261.63, duration: 1.0 },
+          { note: 'رِ ۴', frequency: 293.66, duration: 1.0 },
+          { note: 'می ۴', frequency: 329.63, duration: 1.0 },
+          { note: 'فا ۴', frequency: 349.23, duration: 1.6 },
+        ],
+        correct: '۱ پرده + ۱ پرده + نیم‌پرده (تتراکورد ماژور)',
+        wrongs: [
+          '۳/۴ پرده + ۳/۴ پرده + ۱ پرده (تتراکورد شور)',
+          '۱ پرده + نیم‌پرده + ۱ پرده (تتراکورد مینور)',
+          'نیم‌پرده + ۱ پرده + نیم‌پرده',
+        ],
+        explanation:
+          'دانگ اول ماهور شامل دو فاصله طنینی (دو-ر و ر-می) و یک نیم‌پرده (می-فا) است که کاملاً منطبق بر ساختار گام ماژور طبیعی است.',
+      },
+    ];
+
+    return rawMahourScale.map((q) => {
+      const { options, correctIndex } = shuffleOptions(q.correct, q.wrongs);
+      return {
+        id: q.id,
+        prompt: q.prompt,
+        audioItems: q.audioItems,
+        options,
+        correctIndex,
+        explanation: q.explanation,
+      };
+    });
+  }
+
+  // تمرین شنیداری پرده‌گردانی دلکش ماهور (ex_mahour_delkash_listen)
+  if (exercise.id === 'ex_mahour_delkash_listen') {
+    const rawDelkash = [
+      {
+        id: 'q_mhr_dlk_1',
+        prompt: 'به نغمه تغییریافته در گوشه دلکش گوش دهید. این پرده کدام است؟',
+        audioItems: [{ note: 'لا کُرُن ۴', frequency: 426.2, duration: 2.0 }],
+        correct: 'لا کُرُن ۴ (~۴۲۶ هرتز - ربع‌پرده خنثی دلکش)',
+        wrongs: [
+          'لا ۴ بکار (۴۴۰ هرتز درآمد ماهور)',
+          'لا بمل ۴ غربی (۴۱۵ هرتز)',
+          'سی بمل ۴',
+        ],
+        explanation:
+          'در گوشه دلکش، پرده لا بکار ماهور جای خود را به لا کُرُن (حدود ۴۲۶ هرتز) می‌دهد و روح دستگاه به سوی شور پرواز می‌کند.',
+      },
+      {
+        id: 'q_mhr_dlk_2',
+        prompt: 'توالی دو نغمه (سل ۴ به لا کُرُن ۴) در گوشه دلکش پخش شد. فاصله آن چیست؟',
+        audioItems: [
+          { note: 'سل ۴', frequency: 392.0, duration: 1.2 },
+          { note: 'لا کُرُن ۴', frequency: 426.2, duration: 1.8 },
+        ],
+        correct: 'فاصله سه ربع پرده / دوم نیم‌بزرگ (~۱۴۵ سنت)',
+        wrongs: [
+          'فاصله پرده کامل طنینی (۲۰۰ سنت)',
+          'فاصله نیم‌پرده کوچک (۱۰۰ سنت)',
+          'فاصله سوم بزرگ (۴۰۰ سنت)',
+        ],
+        explanation:
+          'ورود فاصله سه ربع پرده میان سل و لا کُرُن شاخصه بارز مدولاسیون به فضای شور در دلکش ماهور است.',
+      },
+      {
+        id: 'q_mhr_dlk_3',
+        prompt: 'فراز آغازین گوشه دلکش پخش شد. چرخش ملودی گرداگرد کدام نت به عنوان شاهد صورت می‌گیرد؟',
+        audioItems: [
+          { note: 'سل ۴', frequency: 392.0, duration: 1.0 },
+          { note: 'لا کُرُن ۴', frequency: 426.2, duration: 1.2 },
+          { note: 'سی بمل ۴', frequency: 466.16, duration: 1.2 },
+          { note: 'لا کُرُن ۴', frequency: 426.2, duration: 1.2 },
+          { note: 'سل ۴', frequency: 392.0, duration: 1.8 },
+        ],
+        correct: 'نت سل ۴ (شاهد و ایست گوشه دلکش)',
+        wrongs: [
+          'نت دو ۴',
+          'نت می ۴',
+          'نت فا ۴',
+        ],
+        explanation:
+          'در گوشه دلکش، کانون چرخش ملودی و ایست‌های مقطعی بر روی نت سل ۴ قرار دارد.',
+      },
+      {
+        id: 'q_mhr_dlk_4',
+        prompt: 'به این توالی گوش دهید. این پرده‌گردانی از ماهور به کدام فضای آوازی پیوند می‌خورد؟',
+        audioItems: [
+          { note: 'سل ۴', frequency: 392.0, duration: 1.0 },
+          { note: 'لا کُرُن ۴', frequency: 426.2, duration: 1.4 },
+          { note: 'سی بمل ۴', frequency: 466.16, duration: 1.2 },
+          { note: 'دو ۵', frequency: 523.25, duration: 1.4 },
+        ],
+        correct: 'فضای دستگاه شور و گوشه شهناز',
+        wrongs: [
+          'دستگاه چهارگاه',
+          'آواز دشتی',
+          'دستگاه نوا',
+        ],
+        explanation:
+          'با ورود لا کُرُن و سی بمل روی پایه سل، دانگ شور شکل می‌گیرد که به شهناز و شور متصل می‌شود.',
+      },
+      {
+        id: 'q_mhr_dlk_5',
+        prompt: 'فرود از گوشه دلکش به ماهور چگونه صورت می‌گیرد؟',
+        audioItems: [
+          { note: 'سل ۴', frequency: 392.0, duration: 1.2 },
+          { note: 'فا ۴', frequency: 349.23, duration: 1.0 },
+          { note: 'می ۴', frequency: 329.63, duration: 1.2 },
+          { note: 'رِ ۴', frequency: 293.66, duration: 1.0 },
+          { note: 'دو ۴', frequency: 261.63, duration: 2.0 },
+        ],
+        correct: 'بازگشت نغمه‌ها به پرده‌های طبیعی ماهور و ایست بر نت دو ۴',
+        wrongs: [
+          'خاتمه دائمی روی نت سل ۴',
+          'صعود به اوج اکتاو بالا',
+          'تغییر به گام اصفهان',
+        ],
+        explanation:
+          'پس از پایان نغمه‌سرایی در دلکش، لا کُرُن دوباره به لا بکار تبدیل شده و ملودی با آرامش به نت دو فرود می‌آید.',
+      },
+    ];
+
+    return rawDelkash.map((q) => {
+      const { options, correctIndex } = shuffleOptions(q.correct, q.wrongs);
+      return {
+        id: q.id,
+        prompt: q.prompt,
+        audioItems: q.audioItems,
+        options,
+        correctIndex,
+        explanation: q.explanation,
+      };
+    });
+  }
+
   // ایجاد عمومی ۵ سؤال از روی targetNotes برای هر تمرین شنیداری دیگر
   const notes = exercise.targetNotes;
   const questionsList: QuizQuestion[] = [];

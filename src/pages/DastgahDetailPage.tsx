@@ -45,6 +45,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
   onNavigate,
 }) => {
   const isShour = dastgah.id === 'shour';
+  const isMahour = dastgah.id === 'mahour';
 
   // وضعیت‌های صوتی
   const [playingGushehId, setPlayingGushehId] = useState<string | null>(null);
@@ -60,8 +61,8 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
   useEffect(() => {
     const p = ProgressStorage.getProgress();
     setCompletedLessonIds(p.completedLessonIds);
-    setPracticeAttemptsCount(p.practiceAttempts.filter((a) => a.exerciseId.includes('shour')).length);
-  }, []);
+    setPracticeAttemptsCount(p.practiceAttempts.filter((a) => a.exerciseId.includes(dastgah.id)).length);
+  }, [dastgah.id]);
 
   // پاکسازی پخش صوت هنگام خروج
   useEffect(() => {
@@ -75,9 +76,9 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
   const relatedLessons = LESSONS.filter((l) => l.dastgahId === dastgah.id).sort((a, b) => a.order - b.order);
   const relatedExercises = EXERCISES.filter((e) => e.dastgahId === dastgah.id);
 
-  // محاسبه پیشرفت در مسیر شور
-  const shourCompletedCount = relatedLessons.filter((l) => completedLessonIds.includes(l.id)).length;
-  const progressPercent = relatedLessons.length > 0 ? Math.round((shourCompletedCount / relatedLessons.length) * 100) : 0;
+  // محاسبه پیشرفت در مسیر آموزشی
+  const completedLessonsCount = relatedLessons.filter((l) => completedLessonIds.includes(l.id)).length;
+  const progressPercent = relatedLessons.length > 0 ? Math.round((completedLessonsCount / relatedLessons.length) * 100) : 0;
 
   // پخش نمونه صوتی گوشه
   const handlePlayGushehMelody = async (gusheh: Gusheh) => {
@@ -94,10 +95,11 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
 
     setPlayingGushehId(gusheh.id);
 
-    const notesSeq = (gusheh.sampleMelodyNotes || ['سل', 'لا کُرُن', 'سی بمل', 'سل']).map((note) => ({
+    const defaultNotes = isMahour ? ['دو', 'می', 'سل', 'دو'] : ['سل', 'لا کُرُن', 'سی بمل', 'سل'];
+    const notesSeq = (gusheh.sampleMelodyNotes || defaultNotes).map((note) => ({
       note,
       duration: 1.0,
-      frequency: note === 'لا کُرُن' ? 426.2 : undefined, // اعمال فرکانس دقیق مدال در شور
+      frequency: note === 'لا کُرُن' ? 426.2 : note === 'سی کُرُن' ? 480.0 : undefined,
     }));
 
     const cancel = await persianSynth.playMelody(
@@ -186,6 +188,59 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
     },
   ];
 
+  // تعریف درجات مدال دقیق ماهور پایه دو
+  const mahourScaleNotes: ScaleVisualizerNote[] = [
+    {
+      noteNameFa: 'دو',
+      roleInScale: 'پایه',
+      accidental: 'natural',
+      frequencyHz: 261.63,
+      modalExplanation: 'نت پایه و تونیک ماهور؛ ایست نهایی تمام جملات درآمد و فرود.',
+    },
+    {
+      noteNameFa: 'رِ',
+      roleInScale: 'معمولی',
+      accidental: 'natural',
+      frequencyHz: 293.66,
+      modalExplanation: 'درجه دوم؛ نت ایست موقت در گوشه داد.',
+    },
+    {
+      noteNameFa: 'می',
+      roleInScale: 'شاهد درآمد',
+      accidental: 'natural',
+      frequencyHz: 329.63,
+      modalExplanation: 'درجه سوم و شاهد درآمد و گشایش ماهور.',
+    },
+    {
+      noteNameFa: 'فا',
+      roleInScale: 'معمولی',
+      accidental: 'natural',
+      frequencyHz: 349.23,
+      modalExplanation: 'درجه چهارم و نت شاهد در گوشه داد.',
+    },
+    {
+      noteNameFa: 'سل',
+      roleInScale: 'ایست',
+      accidental: 'natural',
+      frequencyHz: 392.00,
+      modalExplanation: 'درجه پنجم و نت ایست موقت درآمد و شاهد گوشه دلکش.',
+    },
+    {
+      noteNameFa: 'لا',
+      roleInScale: 'معمولی',
+      accidental: 'natural',
+      frequencyHz: 440.00,
+      modalExplanation: 'درجه ششم ماهور (در گوشه دلکش به لا کُرُن تبدیل می‌شود).',
+    },
+    {
+      noteNameFa: 'سی',
+      roleInScale: 'محسوس',
+      accidental: 'natural',
+      frequencyHz: 493.88,
+      modalExplanation: 'محسوس ماهور با کشش صعودی به سوی دو اکتاو بالا.',
+    },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 pb-28">
       {/* دکمه بازگشت و نوار ابزار بالا */}
@@ -199,15 +254,15 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
         </button>
 
         <button
-          onClick={() => onNavigate('/exercise?dastgah=shour')}
+          onClick={() => onNavigate(`/exercise?dastgah=${dastgah.id}`)}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 transition-colors shadow-xs"
         >
           <Mic className="w-3.5 h-3.5" />
-          <span>کارگاه تمرین صوتی شور</span>
+          <span>کارگاه تمرین صوتی {dastgah.nameFa}</span>
         </button>
       </div>
 
-      {/* ۱. معرفی دستگاه شور (Hero Header) */}
+      {/* ۱. معرفی دستگاه (Hero Header) */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 space-y-5 shadow-xs">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="font-bold px-2.5 py-0.5 rounded-full bg-stone-900 text-amber-400">
@@ -217,7 +272,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
           <span className="font-mono text-stone-500">{dastgah.nameEn}</span>
           <span className="text-stone-300">·</span>
           <span className="font-mono text-stone-700 font-semibold">پایه: {dastgah.tonicNote}</span>
-          {isShour && (
+          {(isShour || isMahour) && (
             <>
               <span className="text-stone-300">·</span>
               <span className="font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px] font-bold">
@@ -292,7 +347,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
             </div>
           </div>
 
-          {/* ۶ گام نقشه یادگیری */}
+          {/* ۶ گام نقشه یادگیری شور */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
             {[
               {
@@ -369,21 +424,148 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
         </section>
       )}
 
-      {/* ۳. پرده‌بندی و درجات مدال دستگاه شور با پخش زنده و کوک مدال */}
+      {/* ۲ (ب). نقشه یادگیری ۷ مرحله‌ای دستگاه ماهور (ویژه ماهور) */}
+      {isMahour && (
+        <section className="bg-stone-900 text-stone-100 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-800 pb-4">
+            <div>
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-widest block mb-1">
+                مسیر گام‌به‌گام هنرجو
+              </span>
+              <h2 className="text-xl font-bold text-white">
+                نقشه ۷ مرحله‌ای یادگیری دستگاه ماهور
+              </h2>
+              <p className="text-xs text-stone-400 mt-0.5">
+                از شناخت فضای صوتی تا درآمد، گوشه‌ها، پرده‌گردانی و ارزیابی جامع با میکروفون
+              </p>
+            </div>
+
+            {/* نشانگر درصد پیشرفت */}
+            <div className="flex items-center gap-3 bg-stone-800 px-4 py-2 rounded-xl border border-stone-700 self-start sm:self-auto">
+              <div className="text-left font-mono">
+                <span className="text-xs text-stone-400 block">پیشرفت شما</span>
+                <span className="text-base font-black text-amber-400">{progressPercent}%</span>
+              </div>
+              <div className="w-20 bg-stone-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ۷ گام نقشه یادگیری ماهور */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2.5 text-xs">
+            {[
+              {
+                step: 1,
+                title: '۱. آشنایی',
+                subtitle: 'فضای صوتی و گام پایه',
+                lessonId: 'lesson_mahour_1_intro',
+                isDone: completedLessonIds.includes('lesson_mahour_1_intro'),
+              },
+              {
+                step: 2,
+                title: '۲. نت‌های مهم',
+                subtitle: 'پایه دو، شاهد و ایست',
+                lessonId: 'lesson_mahour_2_key_notes',
+                isDone: completedLessonIds.includes('lesson_mahour_2_key_notes'),
+              },
+              {
+                step: 3,
+                title: '۳. درآمد ماهور',
+                subtitle: 'اسکلت نغمگی ردیف',
+                lessonId: 'lesson_4_mahour_daramad',
+                isDone: completedLessonIds.includes('lesson_4_mahour_daramad'),
+              },
+              {
+                step: 4,
+                title: '۴. گوشه گشایش',
+                subtitle: 'گسترش به دانگ میانی',
+                lessonId: 'lesson_mahour_4_goshaiesh',
+                isDone: completedLessonIds.includes('lesson_mahour_4_goshaiesh'),
+              },
+              {
+                step: 5,
+                title: '۵. گوشه داد',
+                subtitle: 'اوج‌گیری و صلابت آواز',
+                lessonId: 'lesson_mahour_5_dad',
+                isDone: completedLessonIds.includes('lesson_mahour_5_dad'),
+              },
+              {
+                step: 6,
+                title: '۶. پرده‌گردانی',
+                subtitle: 'دلکش، شکسته و لا کُرُن',
+                lessonId: 'lesson_mahour_6_melodic_expansion',
+                isDone: completedLessonIds.includes('lesson_mahour_6_melodic_expansion'),
+              },
+              {
+                step: 7,
+                title: '۷. ارزیابی جامع',
+                subtitle: 'فرود و سنجش حنجره',
+                lessonId: 'lesson_mahour_7_forood_evaluation',
+                isDone: completedLessonIds.includes('lesson_mahour_7_forood_evaluation'),
+              },
+            ].map((st) => (
+              <button
+                key={st.step}
+                onClick={() => onNavigate(`/lessons/${st.lessonId}`)}
+                className={`p-3 rounded-xl border text-right transition-all flex flex-col justify-between ${
+                  st.isDone
+                    ? 'bg-amber-950/40 border-amber-500/50 hover:border-amber-400'
+                    : 'bg-stone-800/80 border-stone-700 hover:border-stone-600'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-[10px] text-amber-400 font-bold">
+                    گام {st.step}
+                  </span>
+                  {st.isDone ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-600" />
+                  )}
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-xs">{st.title}</span>
+                  <span className="text-[11px] text-stone-400 block mt-0.5 leading-snug">
+                    {st.subtitle}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ۳. پرده‌بندی و درجات مدال دستگاه با پخش زنده و کوک مدال */}
       <ScaleVisualizer
         title={`پرده‌بندی و گام ${dastgah.nameFa}`}
-        notes={isShour ? shourModalNotes : (dastgah.scaleNotes as ScaleVisualizerNote[])}
+        notes={
+          isShour
+            ? shourModalNotes
+            : isMahour
+            ? mahourScaleNotes
+            : (dastgah.scaleNotes as ScaleVisualizerNote[])
+        }
         defaultOctave={4}
-        tuningProfileName={isShour ? 'شور سنتی سل (SHOUR_MODAL)' : undefined}
+        tuningProfileName={
+          isShour
+            ? 'شور سنتی سل (SHOUR_MODAL)'
+            : isMahour
+            ? 'ماهور پایه دو (MAHOUR_NATURAL)'
+            : undefined
+        }
       />
 
-      {/* ۴. فهرست دروس ساختاریافته آموزش دستگاه شور */}
+      {/* ۴. فهرست دروس ساختاریافته آموزش دستگاه */}
       <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-amber-600" />
-              <span>دروس آموزشی دستگاه شور (برنامه مدون ردیف)</span>
+              <span>دروس آموزشی {dastgah.nameFa} (برنامه مدون ردیف)</span>
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
               هر درس شامل هدف آموزشی، شنیدن نمونه ساز، نکات اجرایی و تمرین عملی اختصاصی است
@@ -448,13 +630,13 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
         </div>
       </section>
 
-      {/* ۵. گوشه‌ها و سیر تحول ملودیک ردیف شور */}
+      {/* ۵. گوشه‌ها و سیر تحول ملودیک ردیف */}
       <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
               <Compass className="w-5 h-5 text-amber-600" />
-              <span>گوشه‌های ردیف و سیر تحول ملودیک شور</span>
+              <span>گوشه‌های ردیف و سیر تحول ملودیک {dastgah.nameFa}</span>
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
               ترتیب ردیف از درآمد تا اوج و فرود؛ روی هر گوشه کلیک کنید تا نغمات و جزئیات آن را بشنوید
@@ -632,19 +814,19 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
             کارگاه ارزیابی حنجره
           </span>
           <h3 className="text-xl sm:text-2xl font-black">
-            آماده خواندن و سنجش صدای خود در دستگاه شور هستید؟
+            آماده خواندن و سنجش صدای خود در {dastgah.nameFa} هستید؟
           </h3>
           <p className="text-xs sm:text-sm text-stone-900/80 max-w-xl">
-            میکروفون را روشن کنید و نغمات درآمد شور را در حضور سنسور وب‌آدیو اجرا کنید تا درصد انطباق صدا با فواصل ربع‌پرده‌ای را مشاهده کنید.
+            میکروفون را روشن کنید و نغمات {dastgah.nameFa} را در حضور سنسور وب‌آدیو اجرا کنید تا درصد انطباق صدا با فواصل را مشاهده کنید.
           </p>
         </div>
 
         <button
-          onClick={() => onNavigate('/exercise?dastgah=shour')}
+          onClick={() => onNavigate(`/exercise?dastgah=${dastgah.id}`)}
           className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-950 hover:bg-stone-900 text-amber-400 text-xs sm:text-sm font-bold transition-all shadow-md shrink-0 active:scale-95"
         >
           <Mic className="w-4 h-4" />
-          <span>ورود به کارگاه تمرین صوتی شور</span>
+          <span>ورود به کارگاه تمرین صوتی {dastgah.nameFa}</span>
         </button>
       </section>
     </div>
