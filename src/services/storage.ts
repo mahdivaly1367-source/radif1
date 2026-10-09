@@ -11,20 +11,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   completedLessonIds: [],
   practiceAttempts: [],
   totalPracticeTimeSeconds: 0,
-  dastgahMastery: {
-    shour: 10,
-    mahour: 0,
-    homayoun: 0,
-    segah: 0,
-    chahargah: 0,
-    nava: 0,
-    rastpanjgah: 0,
-    abouata: 0,
-    dashti: 0,
-    afshari: 0,
-    bayat_tork: 0,
-    esfahan: 0,
-  },
+  dastgahMastery: {},
   lastActiveTimestamp: Date.now(),
 };
 
