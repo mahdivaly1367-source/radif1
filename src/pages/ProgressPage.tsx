@@ -42,20 +42,12 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
   // محاسبه مجموع زمان کل تمرین‌ها (شامل شنیداری و میکروفونی) به دقیقه
   const totalMinutes = Math.round(progress.totalPracticeTimeSeconds / 60);
 
-  // تفکیک بر اساس نوع تمرین با در نظر گرفتن سازگاری عقب‌رو
-  const earTrainingAttempts = allAttempts.filter((att) => {
-    if (att.attemptType === 'ear_training') return true;
-    if (att.attemptType === 'microphone_pitch') return false;
-    const ex = EXERCISES.find((e) => e.id === att.exerciseId);
-    return ex?.type === 'listening';
-  });
-
-  const micAttempts = allAttempts.filter((att) => {
-    if (att.attemptType === 'microphone_pitch') return true;
-    if (att.attemptType === 'ear_training') return false;
-    const ex = EXERCISES.find((e) => e.id === att.exerciseId);
-    return ex ? ex.type !== 'listening' : false;
-  });
+  // تفکیک بر اساس نوع تمرین: فقط سوابق دارای attemptType معتبر
+  const earTrainingAttempts = allAttempts.filter((att) => att.attemptType === 'ear_training');
+  const micAttempts = allAttempts.filter((att) => att.attemptType === 'microphone_pitch');
+  const legacyAttempts = allAttempts.filter(
+    (att) => att.attemptType !== 'ear_training' && att.attemptType !== 'microphone_pitch'
+  );
 
   // میانگین نمرات همه تمرین‌های ثبت‌شده
   const averageScore =
@@ -63,17 +55,13 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
       ? Math.round(allAttempts.reduce((acc, curr) => acc + curr.score, 0) / totalAttemptsCount)
       : null;
 
-  // فیلتر کردن سوابق نمایشی
+  // فیلتر کردن سوابق نمایشی:
+  // سوابق قدیمی بدون نوع مشخص فقط در تب «همه» نمایش داده می‌شوند و به اشتباه وارد فیلتر شنیداری یا میکروفونی نمی‌شوند
   const filteredAttempts = allAttempts.filter((att) => {
     if (historyFilter === 'all') return true;
-    const isEar =
-      att.attemptType === 'ear_training' ||
-      (!att.attemptType && EXERCISES.find((e) => e.id === att.exerciseId)?.type === 'listening');
-    if (historyFilter === 'ear_training') return isEar;
-    const isMic =
-      att.attemptType === 'microphone_pitch' ||
-      (!att.attemptType && EXERCISES.find((e) => e.id === att.exerciseId)?.type !== 'listening');
-    return isMic;
+    if (historyFilter === 'ear_training') return att.attemptType === 'ear_training';
+    if (historyFilter === 'microphone_pitch') return att.attemptType === 'microphone_pitch';
+    return true;
   });
 
   // محاسبه پیشرفت واقعی برای هر دستگاه بر مبنای تمرین‌های سپری‌شده همان دستگاه
@@ -214,6 +202,15 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
               <Mic className="w-3 h-3" />
               {micAttempts.length} میکروفونی
             </span>
+            {legacyAttempts.length > 0 && (
+              <>
+                <span className="text-stone-300">|</span>
+                <span className="flex items-center gap-1 text-stone-500">
+                  <HelpCircle className="w-3 h-3" />
+                  {legacyAttempts.length} قدیمی
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -303,21 +300,16 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                   minute: '2-digit',
                 });
 
-                // تشخیص نوع تمرین با پشتیبانی از داده‌های قدیمی فاقد attemptType
-                const isEar =
-                  att.attemptType === 'ear_training' ||
-                  (!att.attemptType && ex?.type === 'listening');
+                // تعیین وضعیت نوع تمرین
+                const isEar = att.attemptType === 'ear_training';
+                const isMic = att.attemptType === 'microphone_pitch';
+                const isLegacy = !isEar && !isMic;
 
-                const isMic =
-                  att.attemptType === 'microphone_pitch' ||
-                  (!att.attemptType && ex && ex.type !== 'listening');
-
-                // محاسبه تعداد پاسخ‌های صحیح در صورت وجود یا تخمین متناسب
-                const totalQ = att.totalQuestions || 5;
-                const correctCount =
-                  typeof att.correctAnswers === 'number'
-                    ? att.correctAnswers
-                    : Math.round((att.score / 100) * totalQ);
+                // برای سوابق شنیداری معتبر: تعداد پاسخ‌های صحیح در صورت ثبت واقعی
+                const hasValidQuizData =
+                  isEar &&
+                  typeof att.correctAnswers === 'number' &&
+                  typeof att.totalQuestions === 'number';
 
                 return (
                   <div
@@ -338,9 +330,10 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
                             <span>تمرین با میکروفون</span>
                           </span>
                         )}
-                        {!isEar && !isMic && (
-                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
-                            <span>تمرین ردیف</span>
+                        {isLegacy && (
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded border border-stone-300">
+                            <HelpCircle className="w-3 h-3 text-stone-400" />
+                            <span>سابقه قدیمی / نوع نامشخص</span>
                           </span>
                         )}
 
@@ -362,14 +355,14 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ onNavigate }) => {
 
                     <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
                       {/* نمایش جزئیات بسته به نوع تمرین */}
-                      {isEar ? (
+                      {isEar && hasValidQuizData ? (
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-stone-100 text-stone-700 font-mono text-[11px]">
                           <span className="text-stone-400">نتیجه آزمون:</span>
                           <span className="font-bold text-stone-900">
-                            {correctCount} از {totalQ} صحیح
+                            {att.correctAnswers} از {att.totalQuestions} صحیح
                           </span>
                         </div>
-                      ) : isMic ? (
+                      ) : isMic && typeof att.averageCentsDeviation === 'number' ? (
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-stone-100 text-stone-700 font-mono text-[11px]">
                           <span className="text-stone-400">انحراف سنتی:</span>
                           <span className="font-bold text-stone-900">
