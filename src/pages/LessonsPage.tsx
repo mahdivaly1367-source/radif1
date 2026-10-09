@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, Clock, ArrowLeft, CheckCircle2, Sparkles, Filter } from 'lucide-react';
-import { LESSONS } from '../data/lessons';
+import { LESSONS, getLessonLocalNumber } from '../data/lessons';
 import { PageRoute } from '../components/Navbar';
 import { ProgressStorage } from '../services/storage';
 
@@ -86,7 +86,11 @@ export const LessonsPage: React.FC<LessonsPageProps> = ({ onNavigate, onSelectLe
                       : 'bg-stone-100 text-stone-700 border border-stone-200 group-hover:bg-amber-100 group-hover:text-amber-900 group-hover:border-amber-300 transition-colors'
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : lesson.order}
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  ) : (
+                    getLessonLocalNumber(lesson)
+                  )}
                 </div>
 
                 <div className="space-y-1">

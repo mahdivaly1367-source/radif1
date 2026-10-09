@@ -57,6 +57,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
     .sort((a, b) => a.order - b.order);
 
   const currentDastgahIndex = sameDastgahLessons.findIndex((l) => l.id === lesson.id);
+  const localLessonNumber = currentDastgahIndex >= 0 ? currentDastgahIndex + 1 : lesson.order;
   const nextLesson =
     currentDastgahIndex >= 0 && currentDastgahIndex < sameDastgahLessons.length - 1
       ? sameDastgahLessons[currentDastgahIndex + 1]
@@ -175,7 +176,7 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
       <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 space-y-4 shadow-xs">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="font-bold px-2.5 py-0.5 rounded-full bg-stone-900 text-amber-400">
-            درس شماره {lesson.order}
+            درس شماره {localLessonNumber}
           </span>
           <span className="text-stone-300">·</span>
           <span className="text-stone-600 font-medium">سطح {lesson.level}</span>

@@ -577,7 +577,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {relatedLessons.map((l) => {
+          {relatedLessons.map((l, index) => {
             const isCompleted = completedLessonIds.includes(l.id);
             return (
               <div
@@ -587,7 +587,7 @@ export const DastgahDetailPage: React.FC<DastgahDetailPageProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                      درس شماره {l.order} · {l.level}
+                      درس شماره {index + 1} · {l.level}
                     </span>
                     <div className="flex items-center gap-1 text-[11px] text-stone-400">
                       <Clock className="w-3 h-3" />

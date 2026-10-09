@@ -949,7 +949,7 @@ export const LESSONS: Lesson[] = [
     id: 'lesson_3_abouata_hejaz',
     dastgahId: 'abouata',
     gushehId: 'abouata_hejaz',
-    titleFa: 'درس ۸: آواز ابوعطا و گوشه پرشور حجاز',
+    titleFa: 'درس ۱: آواز ابوعطا و گوشه پرشور حجاز',
     subtitleFa: 'تغییر نت شاهد به «دو» و اوج شیدایی در آوازهای متعلق به شور',
     level: 'متوسط',
     estimatedMinutes: 15,
@@ -991,7 +991,7 @@ export const LESSONS: Lesson[] = [
     id: 'lesson_5_segah_character',
     dastgahId: 'segah',
     gushehId: 'segah_daramad',
-    titleFa: 'درس ۱۰: دستگاه سه‌گاه و نت می کُرُن (E𝄳4)',
+    titleFa: 'درس ۱: دستگاه سه‌گاه و نت می کُرُن (E𝄳4)',
     subtitleFa: 'سوز دل‌انگیز نغمه‌ای که ریشه در تاریخ کهن ایران دارد',
     level: 'متوسط',
     estimatedMinutes: 14,
@@ -1029,3 +1029,14 @@ export const LESSONS: Lesson[] = [
     associatedExerciseId: 'ex_segah_pitch',
   },
 ];
+
+/**
+ * محاسبه شماره محلی درس بر اساس جایگاه آن در میان درس‌های همان دستگاه/آواز
+ */
+export function getLessonLocalNumber(lesson: Lesson): number {
+  const sameDastgahLessons = LESSONS
+    .filter((l) => l.dastgahId === lesson.dastgahId)
+    .sort((a, b) => a.order - b.order);
+  const index = sameDastgahLessons.findIndex((l) => l.id === lesson.id);
+  return index >= 0 ? index + 1 : lesson.order;
+}
