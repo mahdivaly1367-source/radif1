@@ -51,9 +51,18 @@ export const LessonDetailPage: React.FC<LessonDetailPageProps> = ({
     return ProgressStorage.getProgress().completedLessonIds.includes(lesson.id);
   });
 
-  const currentIndex = LESSONS.findIndex((l) => l.id === lesson.id);
-  const nextLesson = currentIndex < LESSONS.length - 1 ? LESSONS[currentIndex + 1] : null;
-  const prevLesson = currentIndex > 0 ? LESSONS[currentIndex - 1] : null;
+  // فیلتر و مرتب‌سازی درس‌های متعلق به همین دستگاه بر اساس فیلد order
+  const sameDastgahLessons = LESSONS
+    .filter((l) => l.dastgahId === lesson.dastgahId)
+    .sort((a, b) => a.order - b.order);
+
+  const currentDastgahIndex = sameDastgahLessons.findIndex((l) => l.id === lesson.id);
+  const nextLesson =
+    currentDastgahIndex >= 0 && currentDastgahIndex < sameDastgahLessons.length - 1
+      ? sameDastgahLessons[currentDastgahIndex + 1]
+      : null;
+  const prevLesson =
+    currentDastgahIndex > 0 ? sameDastgahLessons[currentDastgahIndex - 1] : null;
 
   // پاکسازی صوتی هنگام تعویض درس
   useEffect(() => {
