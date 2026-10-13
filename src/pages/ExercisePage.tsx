@@ -49,7 +49,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
     initialExerciseId || EXERCISES[0].id
   );
   const [mode, setMode] = useState<'exercise' | 'free_tuner'>('exercise');
-  const [categoryFilter, setCategoryFilter] = useState<'shour' | 'mahour' | 'all'>('shour');
+  const [categoryFilter, setCategoryFilter] = useState<'shour' | 'mahour' | 'segah' | 'all'>('shour');
   const [currentNoteIndex, setCurrentNoteIndex] = useState<number>(0);
   const [exerciseResult, setExerciseResult] = useState<{
     score: number;
@@ -93,6 +93,8 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
         setCategoryFilter('mahour');
       } else if (found?.dastgahId === 'shour') {
         setCategoryFilter('shour');
+      } else if (found?.dastgahId === 'segah') {
+        setCategoryFilter('segah');
       }
     }
   }, [initialExerciseId]);
@@ -154,10 +156,19 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
       ? EXERCISES.filter((e) => e.dastgahId === 'shour')
       : categoryFilter === 'mahour'
       ? EXERCISES.filter((e) => e.dastgahId === 'mahour')
+      : categoryFilter === 'segah'
+      ? EXERCISES.filter((e) => e.dastgahId === 'segah')
       : EXERCISES;
 
   const currentDastgahId = currentExercise.dastgahId || 'shour';
-  const currentDastgahName = currentDastgahId === 'mahour' ? 'ماهور' : currentDastgahId === 'shour' ? 'شور' : 'ردیف';
+  const currentDastgahName =
+    currentDastgahId === 'mahour'
+      ? 'ماهور'
+      : currentDastgahId === 'shour'
+      ? 'شور'
+      : currentDastgahId === 'segah'
+      ? 'سه‌گاه'
+      : 'ردیف';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 pb-28 text-stone-900">
@@ -212,7 +223,7 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            تمرین‌های مدون {categoryFilter === 'mahour' ? 'ماهور' : categoryFilter === 'shour' ? 'شور' : 'ردیف'}
+            تمرین‌های مدون {categoryFilter === 'mahour' ? 'ماهور' : categoryFilter === 'shour' ? 'شور' : categoryFilter === 'segah' ? 'سه‌گاه' : 'ردیف'}
           </button>
           <button
             onClick={() => {
@@ -420,6 +431,16 @@ export const ExercisePage: React.FC<ExercisePageProps> = ({
                   }`}
                 >
                   ماهور
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('segah')}
+                  className={`px-2 py-0.5 rounded font-bold ${
+                    categoryFilter === 'segah'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  سه‌گاه
                 </button>
                 <button
                   onClick={() => setCategoryFilter('all')}

@@ -438,6 +438,7 @@ export const DASTGAHS: Dastgah[] = [
         rhythmicType: 'آوازی (غیر ضربی)',
         sampleMelodyNotes: ['رِ کُرُن', 'می کُرُن', 'فا', 'می کُرُن', 'رِ کُرُن', 'می کُرُن'],
         orderIndex: 1,
+        relatedExerciseId: 'ex_segah_imitation_daramad',
       },
       {
         id: 'segah_zabol',
@@ -450,6 +451,7 @@ export const DASTGAHS: Dastgah[] = [
         istNote: 'می کُرُن',
         rhythmicType: 'آوازی (غیر ضربی)',
         orderIndex: 2,
+        relatedExerciseId: 'ex_segah_zabol_phrase',
       },
       {
         id: 'segah_mouyeh',
@@ -462,6 +464,7 @@ export const DASTGAHS: Dastgah[] = [
         istNote: 'سل',
         rhythmicType: 'آوازی (غیر ضربی)',
         orderIndex: 3,
+        relatedExerciseId: 'ex_segah_mouyeh_phrase',
       },
       {
         id: 'segah_mokhalef',
@@ -475,6 +478,7 @@ export const DASTGAHS: Dastgah[] = [
         rhythmicType: 'آوازی (غیر ضربی)',
         sampleMelodyNotes: ['سی بمل', 'دو', 'رِ کُرُن', 'دو', 'سی بمل', 'لا کُرُن'],
         orderIndex: 4,
+        relatedExerciseId: 'ex_segah_mokhalef_listen',
       },
     ],
     suggestedLearningPath: ['درآمد سه‌گاه', 'زابل', 'مویه', 'مخالف'],
